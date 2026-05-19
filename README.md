@@ -1,59 +1,120 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Car Rental Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A multi-role car rental management system built with Laravel 13, Filament 5, Livewire 4, and Tailwind CSS. Handles the full rental lifecycle — from public vehicle browsing and booking to employee-managed rentals and admin financial oversight.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Public Frontend (`/`)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [x] Browse available vehicles with date range filtering
+- [x] Car listing cards (image, transmission badge, year, license plate, daily rate)
+- [x] Multi-step booking wizard (rental details → customer details → payment)
+- [x] Guest checkout — auto-creates account on booking
+- [x] Pricing: 12-hour block system, half-day / full-day / multi-day
+- [x] Self-drive or with-driver options with driver fee calculation
+- [x] Delivery method (pickup/delivery)
+- [x] Language switcher (EN | ID)
+- [ ] Dedicated customer registration page
+- [ ] Search/filter cars by name, transmission, or price
 
-## Learning Laravel
+### Customer Panel (`/dashboard`)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- [x] Dashboard stats (active rentals, pending payments, unpaid rentals count)
+- [x] My Rentals — Active tab (Pending/Confirmed/Active) and Past tab (Completed/Cancelled)
+- [x] Rental detail view with payment history
+- [x] Cancel booking (when status = Pending)
+- [x] Upload payment proof (cash or bank transfer)
+- [x] My Profile page
+- [ ] Printable invoice/receipt PDF
+- [ ] Email notifications for booking & payment status changes
+- [ ] Password reset flow
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Employee Panel (`/employee`)
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- [x] Dashboard
+- [x] Vehicle CRUD (list, create, view, edit, delete)
+- [x] Rental CRUD with lifecycle actions (Confirm → Activate → Complete → Cancel)
+- [x] Rental items relation manager (assign vehicle, dates, driver per rental)
+- [x] People CRUD (customers, employees, drivers)
+- [x] Payment CRUD
+- [x] My Profile
+- [ ] Vehicle return inspection (condition notes, damages, fuel level)
+- [ ] Late return penalty calculation
 
-## Agentic Development
+### Admin Panel (`/admin`)
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- [x] All Employee features
+- [x] Dashboard stats: Revenue / Expense / Net Profit (month-over-month)
+- [x] Active rentals table widget
+- [x] Expense management (CRUD, 15 categories, grouped, proof upload) — super_admin only
+- [ ] Revenue/expense charts and trend graphs
+- [ ] Export reports (CSV/Excel)
+- [ ] Vehicle maintenance schedule tracking
+
+### Auth & Access Control
+
+- [x] Role-based panel routing (5 roles: SuperAdmin, Admin, Employee, Customer, Driver)
+- [x] Smart login redirect (role → correct panel)
+- [x] Logout redirect to homepage
+- [ ] Email verification for new accounts
+- [ ] Password reset for all panels
+
+### Data & Seeding
+
+- [x] Rich seeder: 20 vehicles, 11 customers, 5 drivers, 2 employees, 1 admin, 1 superadmin
+- [x] Seeded rentals in all statuses with payments and expenses
+- [ ] Vehicle images (currently all seeded with `null` image)
+- [ ] Vehicle status field (availability inferred via date overlap query — possible race condition)
+
+### Testing (31 tests)
+
+- [x] Booking wizard flow (8 tests)
+- [x] Car listing & date filtering (3 tests)
+- [x] Customer resources & navigation (7 tests)
+- [x] Payment upload workflow (5 tests)
+- [x] Rental management (4 tests)
+- [x] Panel access & role checks (5 tests)
+
+---
+
+## Local Setup
 
 ```bash
-composer require laravel/boost --dev
+git clone <repo-url> car-rental
+cd car-rental
 
-php artisan boost:install
+cp .env.example .env
+composer install
+npm install && npm run build
+php artisan key:generate
+php artisan migrate --seed
+php artisan storage:link
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Test Users
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Role        | Email                   | Password   | URL          |
+|-------------|-------------------------|------------|--------------|
+| Admin       | admin@example.com       | `password` | `/admin`     |
+| Employee    | employee@example.com    | `password` | `/employee`  |
+| Customer    | customer@example.com    | `password` | `/dashboard` |
 
-## Code of Conduct
+All seeded users use password `password` (set in `UserFactory`).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Tech Stack
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# car-rental
+| Layer       | Technology              |
+|-------------|-------------------------|
+| Backend     | PHP 8.3, Laravel 13     |
+| Admin Panel | Filament 5              |
+| Frontend    | Livewire 4, Alpine.js   |
+| Styling     | Tailwind CSS            |
+| Database    | SQLite (dev) / MySQL    |
+| Testing     | Pest 4                  |
+| i18n        | English + Indonesian    |
