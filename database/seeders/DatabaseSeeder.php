@@ -20,6 +20,7 @@ use Faker\Generator;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -27,7 +28,7 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // ─── Users & People (idempotent) ────────────────────────
+        // ─── Users & People (4 core users) ──────────────────────
         $defaultUsers = [
             ['name' => 'Super Admin User', 'email' => 'superadmin@example.com', 'type' => PersonType::SuperAdmin],
             ['name' => 'Admin User', 'email' => 'admin@example.com', 'type' => PersonType::Admin],
@@ -36,12 +37,12 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($defaultUsers as $data) {
-            $user = User::firstOrCreate(
+            $user = User::updateOrCreate(
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
                     'email_verified_at' => now(),
-                    'password' => 'password',
+                    'password' => Hash::make('password'),
                 ],
             );
 
@@ -51,82 +52,10 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // Extra employees (idempotent — fixed emails)
-        for ($i = 2; $i <= 3; $i++) {
-            $email = "employee{$i}@example.com";
+        $superAdmin = User::where('email', 'superadmin@example.com')->first();
+        $customer = User::where('email', 'customer@example.com')->first();
 
-            $user = User::firstOrCreate(
-                ['email' => $email],
-                [
-                    'name' => "Employee {$i}",
-                    'email_verified_at' => now(),
-                    'password' => 'password',
-                ],
-            );
-
-            Person::updateOrCreate(
-                ['user_id' => $user->id],
-                ['type' => PersonType::Employee->value],
-            );
-        }
-
-        // Extra customers (idempotent — fixed emails)
-        for ($i = 2; $i <= 11; $i++) {
-            $email = "customer{$i}@example.com";
-
-            $user = User::firstOrCreate(
-                ['email' => $email],
-                [
-                    'name' => "Customer {$i}",
-                    'email_verified_at' => now(),
-                    'password' => 'password',
-                ],
-            );
-
-            Person::updateOrCreate(
-                ['user_id' => $user->id],
-                ['type' => PersonType::Customer->value],
-            );
-        }
-
-        // Drivers (idempotent — fixed emails)
-        for ($i = 1; $i <= 5; $i++) {
-            $email = "driver{$i}@example.com";
-
-            $user = User::firstOrCreate(
-                ['email' => $email],
-                [
-                    'name' => "Driver {$i}",
-                    'email_verified_at' => now(),
-                    'password' => 'password',
-                ],
-            );
-
-            Person::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'type' => PersonType::Driver->value,
-                    'driver_fee_per_day' => $this->driverFee($i),
-                ],
-            );
-        }
-
-        // Resolve seeded records into collections for downstream use
-        $customers = User::whereIn('email', array_merge(
-            ['customer@example.com'],
-            array_map(fn ($i) => "customer{$i}@example.com", range(2, 11)),
-        ))->get();
-
-        $employees = User::whereIn('email', array_merge(
-            ['employee@example.com'],
-            ['employee2@example.com', 'employee3@example.com'],
-        ))->get();
-
-        $drivers = Person::where('type', PersonType::Driver->value)
-            ->whereHas('user', fn ($q) => $q->where('email', 'like', 'driver%@example.com'))
-            ->get();
-
-        // ─── Vehicles (idempotent — license_plate is unique) ────
+        // ─── Vehicles (idempotent) ──────────────────────────────
         $vehicleData = [
             ['name' => 'Toyota Avanza', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 1234 ABC', 'rental_rate_per_day' => 350_000],
             ['name' => 'Toyota Innova', 'year' => 2023, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 2345 BCD', 'rental_rate_per_day' => 650_000],
@@ -166,304 +95,82 @@ class DatabaseSeeder extends Seeder
 
         $vehicles = Vehicle::all();
 
-        // ─── Rentals (gate: only seed when empty) ────────────────
+        // ─── Rentals (only when empty) ──────────────────────────
         if (Rental::count() > 0) {
             $this->summary();
 
             return;
         }
 
-        // Helper to create a rental with items & payments
-        $rentals = collect();
-
         $createRental = function (
-            User $customer,
-            RentalStatus $rentalStatus,
-            array $itemConfigs,
-            ?array $paymentConfig = null,
-        ) use (&$rentals) {
+            Vehicle $vehicle,
+            RentalStatus $status,
+            string $startOffset,
+            int $days,
+            ?PaymentStatus $paymentStatus = null,
+            ?PaymentMethod $paymentMethod = null,
+            ?RentalItemStatus $itemStatus = null,
+        ) use ($customer) {
+            $startDate = Carbon::parse($startOffset);
+            $endDate = $startDate->copy()->addDays($days);
             $delivery = $this->faker()->randomElement(['pickup', 'delivery']);
-
-            $totalAmount = 0;
-            foreach ($itemConfigs as $cfg) {
-                $days = $cfg['days'];
-                $totalAmount += $cfg['rate'] * $days + ($cfg['driver_fee'] ?? 0) * $days;
-            }
+            $totalAmount = $vehicle->rental_rate_per_day * $days;
 
             $rental = Rental::factory()->create([
                 'user_id' => $customer->id,
-                'status' => $rentalStatus->value,
+                'status' => $status->value,
                 'total_amount' => $totalAmount,
                 'delivery_method' => $delivery,
                 'delivery_address' => $delivery === 'delivery' ? $this->faker()->address() : null,
             ]);
 
-            $rentals->push($rental);
+            RentalItem::factory()->create([
+                'rental_id' => $rental->id,
+                'vehicle_id' => $vehicle->id,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'rental_rate_per_day' => $vehicle->rental_rate_per_day,
+                'status' => ($itemStatus ?? RentalItemStatus::Rented)->value,
+            ]);
 
-            foreach ($itemConfigs as $cfg) {
-                $startDate = Carbon::parse($cfg['start']);
-                $endDate = $startDate->copy()->addDays($cfg['days']);
-                $itemStatus = $cfg['item_status'] ?? RentalItemStatus::Rented;
-
-                RentalItem::factory()->create([
-                    'rental_id' => $rental->id,
-                    'vehicle_id' => $cfg['vehicle']->id,
-                    'start_date' => $startDate,
-                    'end_date' => $endDate,
-                    'driver_id' => ($cfg['driver'] ?? null)?->id,
-                    'driver_fee_per_day' => $cfg['driver_fee'] ?? null,
-                    'rental_rate_per_day' => $cfg['rate'],
-                    'status' => $itemStatus->value,
-                ]);
-            }
-
-            if ($paymentConfig) {
+            if ($paymentStatus) {
                 Payment::factory()->create([
                     'rental_id' => $rental->id,
-                    'amount' => $paymentConfig['amount'] ?? $totalAmount,
-                    'method' => ($paymentConfig['method'] ?? PaymentMethod::Cash)->value,
-                    'status' => ($paymentConfig['status'] ?? PaymentStatus::Paid)->value,
-                    'date' => $paymentConfig['date'] ?? now()->toDateString(),
+                    'amount' => $totalAmount,
+                    'method' => ($paymentMethod ?? PaymentMethod::Cash)->value,
+                    'status' => $paymentStatus->value,
+                    'date' => $startDate->toDateString(),
                 ]);
             }
         };
 
-        // ── Pending ──
-        $createRental($customers[0], RentalStatus::Pending, [
-            ['vehicle' => $vehicles[0], 'start' => now()->addDays(1), 'days' => 3, 'rate' => $vehicles[0]->rental_rate_per_day],
-        ]);
-        $createRental($customers[1], RentalStatus::Pending, [
-            ['vehicle' => $vehicles[1], 'start' => now()->addDays(2), 'days' => 4, 'rate' => $vehicles[1]->rental_rate_per_day, 'driver' => $drivers[0], 'driver_fee' => $drivers[0]->driver_fee_per_day],
-        ]);
-        $createRental($customers[2], RentalStatus::Pending, [
-            ['vehicle' => $vehicles[5], 'start' => now()->addDays(5), 'days' => 2, 'rate' => $vehicles[5]->rental_rate_per_day],
-            ['vehicle' => $vehicles[6], 'start' => now()->addDays(5), 'days' => 2, 'rate' => $vehicles[6]->rental_rate_per_day],
-        ], [
-            'method' => PaymentMethod::Transfer,
-            'status' => PaymentStatus::Pending,
-        ]);
+        $createRental($vehicles[0], RentalStatus::Pending, now()->addDays(1)->toDateTimeString(), 3);
+        $createRental($vehicles[1], RentalStatus::Confirmed, now()->addDays(3)->toDateTimeString(), 4, PaymentStatus::Paid, PaymentMethod::Transfer);
+        $createRental($vehicles[2], RentalStatus::Active, now()->subDays(2)->toDateTimeString(), 5, PaymentStatus::Paid, PaymentMethod::Cash);
+        $createRental($vehicles[3], RentalStatus::Active, now()->subDays(1)->toDateTimeString(), 3, PaymentStatus::Pending);
+        $createRental($vehicles[4], RentalStatus::Completed, now()->subDays(14)->toDateTimeString(), 5, PaymentStatus::Paid, PaymentMethod::Transfer, RentalItemStatus::Returned);
+        $createRental($vehicles[5], RentalStatus::Completed, now()->subDays(7)->toDateTimeString(), 3, PaymentStatus::Paid, PaymentMethod::Cash, RentalItemStatus::Returned);
+        $createRental($vehicles[6], RentalStatus::Cancelled, now()->subDays(5)->toDateTimeString(), 2);
+        $createRental($vehicles[7], RentalStatus::Cancelled, now()->subDays(10)->toDateTimeString(), 4);
 
-        // ── Confirmed ──
-        $createRental($customers[3], RentalStatus::Confirmed, [
-            ['vehicle' => $vehicles[2], 'start' => now()->addDays(1), 'days' => 5, 'rate' => $vehicles[2]->rental_rate_per_day],
-        ], [
-            'method' => PaymentMethod::Transfer,
-            'status' => PaymentStatus::Paid,
-        ]);
-        $createRental($customers[4], RentalStatus::Confirmed, [
-            ['vehicle' => $vehicles[3], 'start' => now()->addDays(3), 'days' => 7, 'rate' => $vehicles[3]->rental_rate_per_day, 'driver' => $drivers[1], 'driver_fee' => $drivers[1]->driver_fee_per_day],
-        ], [
-            'method' => PaymentMethod::Cash,
-            'status' => PaymentStatus::Pending,
-        ]);
-        $createRental($customers[0], RentalStatus::Confirmed, [
-            ['vehicle' => $vehicles[8], 'start' => now()->addDays(1), 'days' => 3, 'rate' => $vehicles[8]->rental_rate_per_day],
-        ]);
-
-        // ── Active ──
-        $createRental($customers[5], RentalStatus::Active, [
-            ['vehicle' => $vehicles[4], 'start' => now()->subDays(2), 'days' => 5, 'rate' => $vehicles[4]->rental_rate_per_day],
-        ], [
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(2),
-        ]);
-        $createRental($customers[6], RentalStatus::Active, [
-            ['vehicle' => $vehicles[7], 'start' => now()->subDays(1), 'days' => 4, 'rate' => $vehicles[7]->rental_rate_per_day, 'driver' => $drivers[2], 'driver_fee' => $drivers[2]->driver_fee_per_day],
-        ], [
-            'method' => PaymentMethod::Transfer,
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(1),
-        ]);
-        $createRental($customers[7], RentalStatus::Active, [
-            ['vehicle' => $vehicles[9], 'start' => now()->subDays(3), 'days' => 6, 'rate' => $vehicles[9]->rental_rate_per_day],
-            ['vehicle' => $vehicles[10], 'start' => now()->subDays(3), 'days' => 6, 'rate' => $vehicles[10]->rental_rate_per_day, 'driver' => $drivers[3], 'driver_fee' => $drivers[3]->driver_fee_per_day],
-        ], [
-            'amount' => 7_500_000,
-            'method' => PaymentMethod::Transfer,
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(3),
-        ]);
-        $createRental($customers[8], RentalStatus::Active, [
-            ['vehicle' => $vehicles[12], 'start' => now()->subDays(1), 'days' => 2, 'rate' => $vehicles[12]->rental_rate_per_day],
-        ], [
-            'method' => PaymentMethod::Cash,
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(1),
-        ]);
-        $createRental($customers[1], RentalStatus::Active, [
-            ['vehicle' => $vehicles[16], 'start' => now()->subDays(4), 'days' => 7, 'rate' => $vehicles[16]->rental_rate_per_day, 'driver' => $drivers[4], 'driver_fee' => $drivers[4]->driver_fee_per_day],
-        ], [
-            'method' => PaymentMethod::Transfer,
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(4),
-        ]);
-
-        // ── Completed ──
-        $createRental($customers[9], RentalStatus::Completed, [
-            ['vehicle' => $vehicles[0], 'start' => now()->subDays(10), 'days' => 4, 'rate' => $vehicles[0]->rental_rate_per_day, 'item_status' => RentalItemStatus::Returned],
-        ], [
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(10),
-        ]);
-        $createRental($customers[2], RentalStatus::Completed, [
-            ['vehicle' => $vehicles[1], 'start' => now()->subDays(14), 'days' => 5, 'rate' => $vehicles[1]->rental_rate_per_day, 'item_status' => RentalItemStatus::Returned],
-            ['vehicle' => $vehicles[3], 'start' => now()->subDays(14), 'days' => 5, 'rate' => $vehicles[3]->rental_rate_per_day, 'driver' => $drivers[0], 'driver_fee' => $drivers[0]->driver_fee_per_day, 'item_status' => RentalItemStatus::Returned],
-        ], [
-            'amount' => 5_250_000,
-            'method' => PaymentMethod::Transfer,
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(14),
-        ]);
-        $createRental($customers[3], RentalStatus::Completed, [
-            ['vehicle' => $vehicles[14], 'start' => now()->subDays(7), 'days' => 3, 'rate' => $vehicles[14]->rental_rate_per_day, 'item_status' => RentalItemStatus::Returned],
-        ], [
-            'method' => PaymentMethod::Cash,
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(7),
-        ]);
-        $createRental($customers[4], RentalStatus::Completed, [
-            ['vehicle' => $vehicles[11], 'start' => now()->subDays(20), 'days' => 7, 'rate' => $vehicles[11]->rental_rate_per_day, 'item_status' => RentalItemStatus::Returned],
-        ], [
-            'method' => PaymentMethod::Transfer,
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(20),
-        ]);
-        $createRental($customers[0], RentalStatus::Completed, [
-            ['vehicle' => $vehicles[17], 'start' => now()->subDays(5), 'days' => 2, 'rate' => $vehicles[17]->rental_rate_per_day, 'item_status' => RentalItemStatus::Returned],
-            ['vehicle' => $vehicles[18], 'start' => now()->subDays(5), 'days' => 2, 'rate' => $vehicles[18]->rental_rate_per_day, 'driver' => $drivers[1], 'driver_fee' => $drivers[1]->driver_fee_per_day, 'item_status' => RentalItemStatus::Returned],
-        ], [
-            'method' => PaymentMethod::Cash,
-            'status' => PaymentStatus::Paid,
-            'date' => now()->subDays(5),
-        ]);
-
-        // ── Cancelled ──
-        $createRental($customers[10], RentalStatus::Cancelled, [
-            ['vehicle' => $vehicles[15], 'start' => now()->subDays(3), 'days' => 3, 'rate' => $vehicles[15]->rental_rate_per_day, 'item_status' => RentalItemStatus::Rented],
-        ]);
-        $createRental($customers[6], RentalStatus::Cancelled, [
-            ['vehicle' => $vehicles[13], 'start' => now()->subDays(6), 'days' => 4, 'rate' => $vehicles[13]->rental_rate_per_day, 'item_status' => RentalItemStatus::Rented],
-        ]);
-        $createRental($customers[5], RentalStatus::Cancelled, [
-            ['vehicle' => $vehicles[19], 'start' => now()->subDays(8), 'days' => 2, 'rate' => $vehicles[19]->rental_rate_per_day, 'driver' => $drivers[2], 'driver_fee' => $drivers[2]->driver_fee_per_day, 'item_status' => RentalItemStatus::Rented],
-        ]);
-        $createRental($customers[4], RentalStatus::Cancelled, [
-            ['vehicle' => $vehicles[2], 'start' => now()->subDays(15), 'days' => 5, 'rate' => $vehicles[2]->rental_rate_per_day, 'item_status' => RentalItemStatus::Rented],
-            ['vehicle' => $vehicles[4], 'start' => now()->subDays(15), 'days' => 5, 'rate' => $vehicles[4]->rental_rate_per_day, 'item_status' => RentalItemStatus::Rented],
-        ]);
-
-        // ─── Expenses (gate: only seed when empty) ───────────────
+        // ─── Expenses (only when empty) ─────────────────────────
         if (Expense::count() > 0) {
             $this->summary();
 
             return;
         }
 
-        $superAdmin = User::where('email', 'superadmin@example.com')->first();
-
-        // Monthly employee salaries
         $adminPerson = Person::whereHas('user', fn ($q) => $q->where('email', 'admin@example.com'))->first();
 
         Expense::create([
             'amount' => 8_000_000,
             'category' => ExpenseCategory::EmployeeSalary->value,
-            'description' => 'Monthly salary — '.$adminPerson->user->name,
+            'description' => 'Monthly salary — Admin User',
             'date' => Carbon::now()->startOfMonth(),
             'person_id' => $adminPerson->id,
             'created_by' => $superAdmin->id,
         ]);
 
-        $salaryAmounts = [3_500_000, 5_500_000];
-        foreach ($employees as $i => $user) {
-            Expense::create([
-                'amount' => $salaryAmounts[$i] ?? 4_500_000,
-                'category' => ExpenseCategory::EmployeeSalary->value,
-                'description' => 'Monthly salary — '.$user->name,
-                'date' => Carbon::now()->startOfMonth(),
-                'person_id' => $user->person->id,
-                'created_by' => $superAdmin->id,
-            ]);
-        }
-
-        // THR for employees
-        $thrAmounts = [3_000_000, 2_000_000];
-        $thrDays = [5, 10];
-        foreach ($employees as $i => $user) {
-            Expense::create([
-                'amount' => $thrAmounts[$i] ?? 2_500_000,
-                'category' => ExpenseCategory::THR->value,
-                'description' => 'THR — '.$user->name,
-                'date' => Carbon::now()->startOfMonth()->addDays($thrDays[$i] ?? 1),
-                'person_id' => $user->person->id,
-                'created_by' => $superAdmin->id,
-            ]);
-        }
-
-        // THR for drivers
-        $driverThrAmounts = [2_500_000, 1_500_000, 3_000_000, 2_000_000, 3_500_000];
-        $driverThrDays = [3, 7, 12, 5, 14];
-        foreach ($drivers as $i => $driverPerson) {
-            Expense::create([
-                'amount' => $driverThrAmounts[$i] ?? 2_000_000,
-                'category' => ExpenseCategory::THR->value,
-                'description' => 'THR — '.$driverPerson->user->name,
-                'date' => Carbon::now()->startOfMonth()->addDays($driverThrDays[$i] ?? 1),
-                'person_id' => $driverPerson->id,
-                'created_by' => $superAdmin->id,
-            ]);
-        }
-
-        // Vehicle maintenance
-        $maintenanceVehicles = [$vehicles[0], $vehicles[3], $vehicles[7]];
-        $maintenanceAmounts = [1_200_000, 850_000, 2_100_000];
-        $maintenanceDays = [3, 8, 15];
-        foreach ($maintenanceVehicles as $i => $vehicle) {
-            Expense::create([
-                'amount' => $maintenanceAmounts[$i],
-                'category' => ExpenseCategory::Maintenance->value,
-                'description' => 'Service — '.$vehicle->name,
-                'date' => Carbon::now()->startOfMonth()->addDays($maintenanceDays[$i]),
-                'vehicle_id' => $vehicle->id,
-                'created_by' => $superAdmin->id,
-            ]);
-        }
-
-        // Vehicle tax
-        $taxVehicles = [$vehicles[1], $vehicles[5]];
-        $taxAmounts = [2_800_000, 3_200_000];
-        $taxDays = [2, 7];
-        foreach ($taxVehicles as $i => $vehicle) {
-            Expense::create([
-                'amount' => $taxAmounts[$i],
-                'category' => ExpenseCategory::VehicleTax->value,
-                'description' => 'Annual tax — '.$vehicle->name.' ('.$vehicle->license_plate.')',
-                'date' => Carbon::now()->startOfMonth()->addDays($taxDays[$i]),
-                'vehicle_id' => $vehicle->id,
-                'created_by' => $superAdmin->id,
-            ]);
-        }
-
-        // Fuel & cleaning
-        $fuelCleanVehicles = [$vehicles[2], $vehicles[4], $vehicles[6], $vehicles[8], $vehicles[10]];
-        $fuelCleanData = [
-            ['amount' => 150_000, 'category' => ExpenseCategory::Fuel->value, 'label' => 'Fuel', 'day' => 4],
-            ['amount' => 80_000, 'category' => ExpenseCategory::Cleaning->value, 'label' => 'Car wash', 'day' => 9],
-            ['amount' => 200_000, 'category' => ExpenseCategory::Fuel->value, 'label' => 'Fuel', 'day' => 14],
-            ['amount' => 75_000, 'category' => ExpenseCategory::Cleaning->value, 'label' => 'Car wash', 'day' => 18],
-            ['amount' => 120_000, 'category' => ExpenseCategory::Fuel->value, 'label' => 'Fuel', 'day' => 22],
-        ];
-        foreach ($fuelCleanVehicles as $i => $vehicle) {
-            Expense::create([
-                'amount' => $fuelCleanData[$i]['amount'],
-                'category' => $fuelCleanData[$i]['category'],
-                'description' => $fuelCleanData[$i]['label'].' — '.$vehicle->name,
-                'date' => Carbon::now()->startOfMonth()->addDays($fuelCleanData[$i]['day']),
-                'vehicle_id' => $vehicle->id,
-                'created_by' => $superAdmin->id,
-            ]);
-        }
-
-        // Operational
         Expense::create([
             'amount' => 5_000_000,
             'category' => ExpenseCategory::OfficeRent->value,
@@ -471,6 +178,7 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->startOfMonth(),
             'created_by' => $superAdmin->id,
         ]);
+
         Expense::create([
             'amount' => 850_000,
             'category' => ExpenseCategory::Utilities->value,
@@ -478,6 +186,34 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->startOfMonth()->addDays(5),
             'created_by' => $superAdmin->id,
         ]);
+
+        Expense::create([
+            'amount' => 1_200_000,
+            'category' => ExpenseCategory::Maintenance->value,
+            'description' => 'Service — Toyota Avanza',
+            'date' => Carbon::now()->startOfMonth()->addDays(3),
+            'vehicle_id' => $vehicles[0]->id,
+            'created_by' => $superAdmin->id,
+        ]);
+
+        Expense::create([
+            'amount' => 2_800_000,
+            'category' => ExpenseCategory::VehicleTax->value,
+            'description' => 'Annual tax — '.$vehicles[1]->name.' ('.$vehicles[1]->license_plate.')',
+            'date' => Carbon::now()->startOfMonth()->addDays(2),
+            'vehicle_id' => $vehicles[1]->id,
+            'created_by' => $superAdmin->id,
+        ]);
+
+        Expense::create([
+            'amount' => 150_000,
+            'category' => ExpenseCategory::Fuel->value,
+            'description' => 'Fuel — '.$vehicles[2]->name,
+            'date' => Carbon::now()->startOfMonth()->addDays(8),
+            'vehicle_id' => $vehicles[2]->id,
+            'created_by' => $superAdmin->id,
+        ]);
+
         Expense::create([
             'amount' => 600_000,
             'category' => ExpenseCategory::Marketing->value,
@@ -492,17 +228,6 @@ class DatabaseSeeder extends Seeder
     private function faker(): Generator
     {
         return fake();
-    }
-
-    private function driverFee(int $index): int
-    {
-        return match ($index) {
-            1 => 150_000,
-            2 => 100_000,
-            3 => 175_000,
-            4 => 125_000,
-            5 => 200_000,
-        };
     }
 
     private function summary(): void
