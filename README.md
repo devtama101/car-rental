@@ -97,13 +97,85 @@ php artisan storage:link
 
 ## Test Users
 
-| Role        | Email                   | Password   | URL          |
-|-------------|-------------------------|------------|--------------|
-| Admin       | admin@example.com       | `password` | `/admin`     |
-| Employee    | employee@example.com    | `password` | `/employee`  |
-| Customer    | customer@example.com    | `password` | `/dashboard` |
+| Role        | Email                        | Password   | URL          |
+|-------------|------------------------------|------------|--------------|
+| Super Admin | superadmin@example.com       | `password` | `/admin`     |
+| Admin       | admin@example.com            | `password` | `/admin`     |
+| Employee    | employee@example.com         | `password` | `/employee`  |
+| Customer    | customer@example.com         | `password` | `/dashboard` |
 
-All seeded users use password `password` (set in `UserFactory`).
+All seeded users use password `password`.
+
+---
+
+## User Guide
+
+### Public Frontend (`/`)
+
+Anyone can browse vehicles and book a car without an account:
+
+1. **Browse Vehicles** — Click "Telusuri Mobil" (Browse Cars) on the homepage. Filter by pickup/return dates, choose self-drive or with-driver.
+2. **Book a Car** — Click "Sewa" (Rent) on any car card. The booking wizard guides you through:
+   - **Step 1 — Rental Details:** Pickup/return dates, delivery method (pickup or delivery with address).
+   - **Step 2 — Customer Details:** Name, email, phone, address, ID type. If you enter a new email, an account is created automatically with your password.
+   - **Step 3 — Payment:** Choose cash or bank transfer. For transfers, you will upload proof later.
+3. **Track Your Booking** — After booking, log in at `/dashboard` with the email and password you provided.
+
+### Customer Panel (`/dashboard`)
+
+Once logged in as a customer:
+
+| Menu | What You Can Do |
+|---|---|
+| **Dashboard** | See active rentals, pending payments, unpaid rental count |
+| **Sewa Saya (My Rentals)** | Active tab: view Pending/Confirmed/Active rentals. Past tab: view Completed/Cancelled rentals. Click any rental for detail, payment history, and cancel option (if Pending) |
+| **Upload Payment** | From a rental detail page, upload payment proof (photo/PDF) for bank transfer bookings |
+| **My Profile** | View your account info (name, email, phone, address, ID) |
+
+### Employee Panel (`/employee`)
+
+For staff managing day-to-day operations:
+
+| Menu | What You Can Do |
+|---|---|
+| **Dashboard** | Overview of rentals in progress |
+| **Rentals** | View all rentals. Use action buttons to move rentals through the lifecycle: **Confirm** → **Activate** → **Complete** → **Cancel**. Click a rental to manage its items (assigned vehicles, dates, drivers) |
+| **Vehicles** | Add/edit/delete vehicles. Set name, year, transmission, license plate, rental rate, and upload images |
+| **People** | Manage customers, employees, and drivers. View contact info, ID documents, and driver fees |
+| **Payments** | View and verify payments uploaded by customers |
+| **My Profile** | View your account |
+
+**Rental Lifecycle:**
+```
+Pending → Confirmed → Active → Completed
+                  ↘ Cancelled
+```
+
+- **Pending:** Customer submitted booking, awaiting staff confirmation.
+- **Confirmed:** Staff approved the booking. Vehicle allocated.
+- **Active:** Customer has the car. Rental in progress.
+- **Completed:** Car returned. Rental finished.
+- **Cancelled:** Booking cancelled by customer or staff.
+
+### Admin Panel (`/admin`)
+
+For owners/managers — same as employee panel plus financial oversight:
+
+| Menu | What You Can Do |
+|---|---|
+| **Dashboard** | Revenue / Expense / Net Profit stats with month-over-month comparison, active rentals table |
+| **Expenses** (Super Admin only) | Track all operational costs: employee salaries, driver wages, THR, bonuses, maintenance, vehicle tax, insurance, fuel, cleaning, spare parts, office rent, utilities, marketing, and other. Upload proof files, categorize, and filter by date |
+| **Everything Employee Has** | All rental, vehicle, people, payment management |
+
+The **Super Admin** user has full access to all panels and all features including expense management. The **Admin** user has everything except expense management.
+
+### Quick Rental Flow (Example)
+
+1. **Customer** browses cars at `/` → books a Toyota Avanza for 3 days, bank transfer → rental status: **Pending**
+2. **Employee/Admin** logs in at `/employee` or `/admin` → sees pending rental → clicks **Confirm** → rental status: **Confirmed**
+3. **Employee/Admin** clicks **Activate** when customer picks up the car → rental status: **Active**
+4. **Customer** uploads payment proof from `/dashboard` → **Employee/Admin** verifies payment
+5. **Employee/Admin** clicks **Complete** when car is returned → rental status: **Completed**
 
 ---
 
