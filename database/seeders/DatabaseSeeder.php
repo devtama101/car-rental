@@ -16,9 +16,11 @@ use App\Models\Rental;
 use App\Models\RentalItem;
 use App\Models\User;
 use App\Models\Vehicle;
+use Faker\Generator;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -26,13 +28,7 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        $customers = collect();
-        $drivers = collect();
-        $employees = collect();
-        $vehicles = collect();
-        $rentals = collect();
-
-        // ─── Users & People ────────────────────────────────────
+        // ─── Users & People (idempotent) ────────────────────────
         $defaultUsers = [
             ['name' => 'Super Admin User', 'email' => 'superadmin@example.com', 'type' => PersonType::SuperAdmin],
             ['name' => 'Admin User', 'email' => 'admin@example.com', 'type' => PersonType::Admin],
@@ -41,43 +37,97 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($defaultUsers as $data) {
-            $user = User::factory()->create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-            ]);
+            $user = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('password'),
+                ],
+            );
 
-            Person::factory()->create([
-                'user_id' => $user->id,
-                'type' => $data['type']->value,
-            ]);
-
-            if ($data['type'] === PersonType::Customer) {
-                $customers->push($user);
-            }
+            Person::updateOrCreate(
+                ['user_id' => $user->id],
+                ['type' => $data['type']->value],
+            );
         }
 
-        // 2 more employees
-        for ($i = 0; $i < 2; $i++) {
-            $user = User::factory()->create();
-            Person::factory()->employee()->create(['user_id' => $user->id]);
-            $employees->push($user);
+        // Extra employees (idempotent — fixed emails)
+        for ($i = 2; $i <= 3; $i++) {
+            $email = "employee{$i}@example.com";
+
+            $user = User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => "Employee {$i}",
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('password'),
+                ],
+            );
+
+            Person::updateOrCreate(
+                ['user_id' => $user->id],
+                ['type' => PersonType::Employee->value],
+            );
         }
 
-        // 10 more customers
-        for ($i = 0; $i < 10; $i++) {
-            $user = User::factory()->create();
-            Person::factory()->customer()->create(['user_id' => $user->id]);
-            $customers->push($user);
+        // Extra customers (idempotent — fixed emails)
+        for ($i = 2; $i <= 11; $i++) {
+            $email = "customer{$i}@example.com";
+
+            $user = User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => "Customer {$i}",
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('password'),
+                ],
+            );
+
+            Person::updateOrCreate(
+                ['user_id' => $user->id],
+                ['type' => PersonType::Customer->value],
+            );
         }
 
-        // 5 drivers
-        for ($i = 0; $i < 5; $i++) {
-            $user = User::factory()->create();
-            $person = Person::factory()->driver()->create(['user_id' => $user->id]);
-            $drivers->push($person);
+        // Drivers (idempotent — fixed emails)
+        for ($i = 1; $i <= 5; $i++) {
+            $email = "driver{$i}@example.com";
+
+            $user = User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => "Driver {$i}",
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('password'),
+                ],
+            );
+
+            Person::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'type' => PersonType::Driver->value,
+                    'driver_fee_per_day' => $this->driverFee($i),
+                ],
+            );
         }
 
-        // ─── Vehicles ──────────────────────────────────────────
+        // Resolve seeded records into collections for downstream use
+        $customers = User::whereIn('email', array_merge(
+            ['customer@example.com'],
+            array_map(fn ($i) => "customer{$i}@example.com", range(2, 11)),
+        ))->get();
+
+        $employees = User::whereIn('email', array_merge(
+            ['employee@example.com'],
+            ['employee2@example.com', 'employee3@example.com'],
+        ))->get();
+
+        $drivers = Person::where('type', PersonType::Driver->value)
+            ->whereHas('user', fn ($q) => $q->where('email', 'like', 'driver%@example.com'))
+            ->get();
+
+        // ─── Vehicles (idempotent — license_plate is unique) ────
         $vehicleData = [
             ['name' => 'Toyota Avanza', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 1234 ABC', 'rental_rate_per_day' => 350_000],
             ['name' => 'Toyota Innova', 'year' => 2023, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 2345 BCD', 'rental_rate_per_day' => 650_000],
@@ -102,29 +152,38 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($vehicleData as $data) {
-            $v = Vehicle::factory()->create([
-                'name' => $data['name'],
-                'year' => $data['year'],
-                'transmission' => $data['transmission']->value,
-                'license_plate' => $data['license_plate'],
-                'description' => fake()->sentence(),
-                'rental_rate_per_day' => $data['rental_rate_per_day'],
-                'image' => null,
-            ]);
-            $vehicles->push($v);
+            Vehicle::updateOrCreate(
+                ['license_plate' => $data['license_plate']],
+                [
+                    'name' => $data['name'],
+                    'year' => $data['year'],
+                    'transmission' => $data['transmission']->value,
+                    'description' => $this->faker()->sentence(),
+                    'rental_rate_per_day' => $data['rental_rate_per_day'],
+                    'image' => null,
+                ],
+            );
         }
 
-        // ─── Rentals ───────────────────────────────────────────
+        $vehicles = Vehicle::all();
+
+        // ─── Rentals (gate: only seed when empty) ────────────────
+        if (Rental::count() > 0) {
+            $this->summary();
+
+            return;
+        }
 
         // Helper to create a rental with items & payments
+        $rentals = collect();
+
         $createRental = function (
             User $customer,
             RentalStatus $rentalStatus,
             array $itemConfigs,
             ?array $paymentConfig = null,
         ) use (&$rentals) {
-            $deliveryMethods = ['pickup', 'delivery'];
-            $delivery = fake()->randomElement($deliveryMethods);
+            $delivery = $this->faker()->randomElement(['pickup', 'delivery']);
 
             $totalAmount = 0;
             foreach ($itemConfigs as $cfg) {
@@ -137,7 +196,7 @@ class DatabaseSeeder extends Seeder
                 'status' => $rentalStatus->value,
                 'total_amount' => $totalAmount,
                 'delivery_method' => $delivery,
-                'delivery_address' => $delivery === 'delivery' ? fake()->address() : null,
+                'delivery_address' => $delivery === 'delivery' ? $this->faker()->address() : null,
             ]);
 
             $rentals->push($rental);
@@ -170,7 +229,7 @@ class DatabaseSeeder extends Seeder
             }
         };
 
-        // ── Pending rentals ──
+        // ── Pending ──
         $createRental($customers[0], RentalStatus::Pending, [
             ['vehicle' => $vehicles[0], 'start' => now()->addDays(1), 'days' => 3, 'rate' => $vehicles[0]->rental_rate_per_day],
         ]);
@@ -185,7 +244,7 @@ class DatabaseSeeder extends Seeder
             'status' => PaymentStatus::Pending,
         ]);
 
-        // ── Confirmed rentals ──
+        // ── Confirmed ──
         $createRental($customers[3], RentalStatus::Confirmed, [
             ['vehicle' => $vehicles[2], 'start' => now()->addDays(1), 'days' => 5, 'rate' => $vehicles[2]->rental_rate_per_day],
         ], [
@@ -202,7 +261,7 @@ class DatabaseSeeder extends Seeder
             ['vehicle' => $vehicles[8], 'start' => now()->addDays(1), 'days' => 3, 'rate' => $vehicles[8]->rental_rate_per_day],
         ]);
 
-        // ── Active rentals ──
+        // ── Active ──
         $createRental($customers[5], RentalStatus::Active, [
             ['vehicle' => $vehicles[4], 'start' => now()->subDays(2), 'days' => 5, 'rate' => $vehicles[4]->rental_rate_per_day],
         ], [
@@ -240,7 +299,7 @@ class DatabaseSeeder extends Seeder
             'date' => now()->subDays(4),
         ]);
 
-        // ── Completed rentals ──
+        // ── Completed ──
         $createRental($customers[9], RentalStatus::Completed, [
             ['vehicle' => $vehicles[0], 'start' => now()->subDays(10), 'days' => 4, 'rate' => $vehicles[0]->rental_rate_per_day, 'item_status' => RentalItemStatus::Returned],
         ], [
@@ -279,7 +338,7 @@ class DatabaseSeeder extends Seeder
             'date' => now()->subDays(5),
         ]);
 
-        // ── Cancelled rentals ──
+        // ── Cancelled ──
         $createRental($customers[10], RentalStatus::Cancelled, [
             ['vehicle' => $vehicles[15], 'start' => now()->subDays(3), 'days' => 3, 'rate' => $vehicles[15]->rental_rate_per_day, 'item_status' => RentalItemStatus::Rented],
         ]);
@@ -294,10 +353,16 @@ class DatabaseSeeder extends Seeder
             ['vehicle' => $vehicles[4], 'start' => now()->subDays(15), 'days' => 5, 'rate' => $vehicles[4]->rental_rate_per_day, 'item_status' => RentalItemStatus::Rented],
         ]);
 
-        // ─── Expenses ───────────────────────────────────────────
+        // ─── Expenses (gate: only seed when empty) ───────────────
+        if (Expense::count() > 0) {
+            $this->summary();
+
+            return;
+        }
+
         $superAdmin = User::where('email', 'superadmin@example.com')->first();
 
-        // Monthly employee salaries (current month)
+        // Monthly employee salaries
         $adminPerson = Person::whereHas('user', fn ($q) => $q->where('email', 'admin@example.com'))->first();
 
         Expense::create([
@@ -309,9 +374,10 @@ class DatabaseSeeder extends Seeder
             'created_by' => $superAdmin->id,
         ]);
 
-        foreach ($employees as $user) {
+        $salaryAmounts = [3_500_000, 5_500_000];
+        foreach ($employees as $i => $user) {
             Expense::create([
-                'amount' => fake()->numberBetween(3_000_000, 5_500_000),
+                'amount' => $salaryAmounts[$i] ?? 4_500_000,
                 'category' => ExpenseCategory::EmployeeSalary->value,
                 'description' => 'Monthly salary — '.$user->name,
                 'date' => Carbon::now()->startOfMonth(),
@@ -320,67 +386,85 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // THR (this month, annual) for employees
-        foreach ($employees as $user) {
+        // THR for employees
+        $thrAmounts = [3_000_000, 2_000_000];
+        $thrDays = [5, 10];
+        foreach ($employees as $i => $user) {
             Expense::create([
-                'amount' => fake()->numberBetween(1_500_000, 4_000_000),
+                'amount' => $thrAmounts[$i] ?? 2_500_000,
                 'category' => ExpenseCategory::THR->value,
                 'description' => 'THR — '.$user->name,
-                'date' => Carbon::now()->startOfMonth()->addDays(fake()->numberBetween(1, 15)),
+                'date' => Carbon::now()->startOfMonth()->addDays($thrDays[$i] ?? 1),
                 'person_id' => $user->person->id,
                 'created_by' => $superAdmin->id,
             ]);
         }
 
         // THR for drivers
-        foreach ($drivers as $driverPerson) {
+        $driverThrAmounts = [2_500_000, 1_500_000, 3_000_000, 2_000_000, 3_500_000];
+        $driverThrDays = [3, 7, 12, 5, 14];
+        foreach ($drivers as $i => $driverPerson) {
             Expense::create([
-                'amount' => fake()->numberBetween(1_500_000, 4_000_000),
+                'amount' => $driverThrAmounts[$i] ?? 2_000_000,
                 'category' => ExpenseCategory::THR->value,
                 'description' => 'THR — '.$driverPerson->user->name,
-                'date' => Carbon::now()->startOfMonth()->addDays(fake()->numberBetween(1, 15)),
+                'date' => Carbon::now()->startOfMonth()->addDays($driverThrDays[$i] ?? 1),
                 'person_id' => $driverPerson->id,
                 'created_by' => $superAdmin->id,
             ]);
         }
 
-        // Vehicle maintenance this month
-        foreach ($vehicles->random(3) as $vehicle) {
+        // Vehicle maintenance
+        $maintenanceVehicles = [$vehicles[0], $vehicles[3], $vehicles[7]];
+        $maintenanceAmounts = [1_200_000, 850_000, 2_100_000];
+        $maintenanceDays = [3, 8, 15];
+        foreach ($maintenanceVehicles as $i => $vehicle) {
             Expense::create([
-                'amount' => fake()->numberBetween(200_000, 2_500_000),
+                'amount' => $maintenanceAmounts[$i],
                 'category' => ExpenseCategory::Maintenance->value,
                 'description' => 'Service — '.$vehicle->name,
-                'date' => Carbon::now()->startOfMonth()->addDays(fake()->numberBetween(1, 20)),
+                'date' => Carbon::now()->startOfMonth()->addDays($maintenanceDays[$i]),
                 'vehicle_id' => $vehicle->id,
                 'created_by' => $superAdmin->id,
             ]);
         }
 
-        // Vehicle tax this month (random vehicles)
-        foreach ($vehicles->random(2) as $vehicle) {
+        // Vehicle tax
+        $taxVehicles = [$vehicles[1], $vehicles[5]];
+        $taxAmounts = [2_800_000, 3_200_000];
+        $taxDays = [2, 7];
+        foreach ($taxVehicles as $i => $vehicle) {
             Expense::create([
-                'amount' => fake()->numberBetween(1_500_000, 4_000_000),
+                'amount' => $taxAmounts[$i],
                 'category' => ExpenseCategory::VehicleTax->value,
                 'description' => 'Annual tax — '.$vehicle->name.' ('.$vehicle->license_plate.')',
-                'date' => Carbon::now()->startOfMonth()->addDays(fake()->numberBetween(1, 10)),
+                'date' => Carbon::now()->startOfMonth()->addDays($taxDays[$i]),
                 'vehicle_id' => $vehicle->id,
                 'created_by' => $superAdmin->id,
             ]);
         }
 
-        // Fuel & cleaning this month
-        foreach ($vehicles->random(5) as $vehicle) {
+        // Fuel & cleaning
+        $fuelCleanVehicles = [$vehicles[2], $vehicles[4], $vehicles[6], $vehicles[8], $vehicles[10]];
+        $fuelCleanData = [
+            ['amount' => 150_000, 'category' => ExpenseCategory::Fuel->value, 'label' => 'Fuel', 'day' => 4],
+            ['amount' => 80_000, 'category' => ExpenseCategory::Cleaning->value, 'label' => 'Car wash', 'day' => 9],
+            ['amount' => 200_000, 'category' => ExpenseCategory::Fuel->value, 'label' => 'Fuel', 'day' => 14],
+            ['amount' => 75_000, 'category' => ExpenseCategory::Cleaning->value, 'label' => 'Car wash', 'day' => 18],
+            ['amount' => 120_000, 'category' => ExpenseCategory::Fuel->value, 'label' => 'Fuel', 'day' => 22],
+        ];
+        foreach ($fuelCleanVehicles as $i => $vehicle) {
             Expense::create([
-                'amount' => fake()->numberBetween(50_000, 300_000),
-                'category' => fake()->randomElement([ExpenseCategory::Fuel->value, ExpenseCategory::Cleaning->value]),
-                'description' => fake()->randomElement(['Fuel', 'Car wash']).' — '.$vehicle->name,
-                'date' => Carbon::now()->startOfMonth()->addDays(fake()->numberBetween(1, 25)),
+                'amount' => $fuelCleanData[$i]['amount'],
+                'category' => $fuelCleanData[$i]['category'],
+                'description' => $fuelCleanData[$i]['label'].' — '.$vehicle->name,
+                'date' => Carbon::now()->startOfMonth()->addDays($fuelCleanData[$i]['day']),
                 'vehicle_id' => $vehicle->id,
                 'created_by' => $superAdmin->id,
             ]);
         }
 
-        // Operational expenses
+        // Operational
         Expense::create([
             'amount' => 5_000_000,
             'category' => ExpenseCategory::OfficeRent->value,
@@ -389,20 +473,41 @@ class DatabaseSeeder extends Seeder
             'created_by' => $superAdmin->id,
         ]);
         Expense::create([
-            'amount' => fake()->numberBetween(500_000, 1_200_000),
+            'amount' => 850_000,
             'category' => ExpenseCategory::Utilities->value,
             'description' => 'Electricity & internet',
             'date' => Carbon::now()->startOfMonth()->addDays(5),
             'created_by' => $superAdmin->id,
         ]);
         Expense::create([
-            'amount' => fake()->numberBetween(300_000, 800_000),
+            'amount' => 600_000,
             'category' => ExpenseCategory::Marketing->value,
             'description' => 'Social media ads',
             'date' => Carbon::now()->startOfMonth()->addDays(10),
             'created_by' => $superAdmin->id,
         ]);
 
+        $this->summary();
+    }
+
+    private function faker(): Generator
+    {
+        return fake();
+    }
+
+    private function driverFee(int $index): int
+    {
+        return match ($index) {
+            1 => 150_000,
+            2 => 100_000,
+            3 => 175_000,
+            4 => 125_000,
+            5 => 200_000,
+        };
+    }
+
+    private function summary(): void
+    {
         $this->command?->info('Seed complete!');
         $this->command?->info('Users: '.User::count().' | People: '.Person::count().' | Vehicles: '.Vehicle::count());
         $this->command?->info('Rentals: '.Rental::count().' | RentalItems: '.RentalItem::count().' | Payments: '.Payment::count());
