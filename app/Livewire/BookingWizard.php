@@ -222,8 +222,7 @@ class BookingWizard extends Component implements HasSchemas
                                 ->password()
                                 ->required()
                                 ->minLength(8)
-                                ->rules(['regex:/[A-Z]/', 'regex:/[0-9]/'])
-                                ->placeholder(__('Min. 8 chars, 1 uppercase, 1 number')),
+                                ->placeholder(__('Min. 8 characters')),
                             TextInput::make('customer_phone')
                                 ->label(__('Phone Number'))
                                 ->tel()
