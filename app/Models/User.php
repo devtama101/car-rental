@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -43,27 +44,36 @@ class User extends Authenticatable implements FilamentUser
 
     public function isSuperAdmin(): bool
     {
-        return $this->person?->type === PersonType::SuperAdmin->value;
+        return $this->getPersonType() === PersonType::SuperAdmin->value;
     }
 
     public function isAdmin(): bool
     {
-        return $this->person?->type === PersonType::Admin->value;
+        return $this->getPersonType() === PersonType::Admin->value;
     }
 
     public function isEmployee(): bool
     {
-        return $this->person?->type === PersonType::Employee->value;
+        return $this->getPersonType() === PersonType::Employee->value;
     }
 
     public function isCustomer(): bool
     {
-        return $this->person?->type === PersonType::Customer->value;
+        return $this->getPersonType() === PersonType::Customer->value;
     }
 
     public function isDriver(): bool
     {
-        return $this->person?->type === PersonType::Driver->value;
+        return $this->getPersonType() === PersonType::Driver->value;
+    }
+
+    private function getPersonType(): ?string
+    {
+        return $this->person?->type
+            ?? DB::table('people')
+                ->where('user_id', $this->id)
+                ->whereNull('deleted_at')
+                ->value('type');
     }
 
     public function canAccessPanel(Panel $panel): bool
