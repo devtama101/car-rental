@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            Person::firstOrCreate(
+            Person::updateOrCreate(
                 ['user_id' => $user->id],
                 ['type' => $data['type']->value],
             );
@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            Person::firstOrCreate(
+            Person::updateOrCreate(
                 ['user_id' => $user->id],
                 ['type' => PersonType::Employee->value],
             );
@@ -83,7 +83,7 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            Person::firstOrCreate(
+            Person::updateOrCreate(
                 ['user_id' => $user->id],
                 ['type' => PersonType::Customer->value],
             );
@@ -102,7 +102,7 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            Person::firstOrCreate(
+            Person::updateOrCreate(
                 ['user_id' => $user->id],
                 [
                     'type' => PersonType::Driver->value,
