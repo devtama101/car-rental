@@ -17,10 +17,10 @@ class PaymentFactory extends Factory
     {
         return [
             'rental_id' => Rental::factory(),
-            'amount' => fake()->numberBetween(200_000, 10_000_000),
-            'method' => fake()->randomElement(PaymentMethod::cases())->value,
-            'status' => fake()->randomElement(PaymentStatus::cases())->value,
-            'date' => fake()->date(),
+            'amount' => $this->faker->numberBetween(200_000, 10_000_000),
+            'method' => $this->faker->randomElement(PaymentMethod::cases())->value,
+            'status' => $this->faker->randomElement(PaymentStatus::cases())->value,
+            'date' => $this->faker->date(),
         ];
     }
 

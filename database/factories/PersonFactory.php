@@ -17,10 +17,10 @@ class PersonFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'type' => fake()->randomElement(PersonType::cases())->value,
-            'phone' => fake()->phoneNumber(),
-            'address' => fake()->address(),
-            'id_type' => fake()->randomElement(IdType::cases())->value,
+            'type' => $this->faker->randomElement(PersonType::cases())->value,
+            'phone' => $this->faker->phoneNumber(),
+            'address' => $this->faker->address(),
+            'id_type' => $this->faker->randomElement(IdType::cases())->value,
             'id_file_path' => null,
         ];
     }
@@ -57,7 +57,7 @@ class PersonFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'type' => PersonType::Driver->value,
-            'driver_fee_per_day' => fake()->numberBetween(50_000, 200_000),
+            'driver_fee_per_day' => $this->faker->numberBetween(50_000, 200_000),
         ]);
     }
 }

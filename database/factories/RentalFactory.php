@@ -16,8 +16,8 @@ class RentalFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'total_amount' => fake()->numberBetween(200_000, 10_000_000),
-            'status' => fake()->randomElement(RentalStatus::cases())->value,
+            'total_amount' => $this->faker->numberBetween(200_000, 10_000_000),
+            'status' => $this->faker->randomElement(RentalStatus::cases())->value,
         ];
     }
 

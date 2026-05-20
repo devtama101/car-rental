@@ -17,10 +17,10 @@ class ExpenseFactory extends Factory
     public function definition(): array
     {
         return [
-            'amount' => fake()->numberBetween(100_000, 10_000_000),
-            'category' => fake()->randomElement(ExpenseCategory::cases())->value,
-            'description' => fake()->optional()->sentence(),
-            'date' => fake()->dateTimeBetween('-3 months', 'now'),
+            'amount' => $this->faker->numberBetween(100_000, 10_000_000),
+            'category' => $this->faker->randomElement(ExpenseCategory::cases())->value,
+            'description' => $this->faker->optional()->sentence(),
+            'date' => $this->faker->dateTimeBetween('-3 months', 'now'),
             'proof_file_path' => null,
             'person_id' => null,
             'vehicle_id' => null,
@@ -32,7 +32,7 @@ class ExpenseFactory extends Factory
     {
         return $this->state(fn () => [
             'vehicle_id' => $vehicle->id,
-            'category' => fake()->randomElement([
+            'category' => $this->faker->randomElement([
                 ExpenseCategory::Maintenance,
                 ExpenseCategory::VehicleTax,
                 ExpenseCategory::VehicleInsurance,
@@ -47,7 +47,7 @@ class ExpenseFactory extends Factory
     {
         return $this->state(fn () => [
             'person_id' => $person->id,
-            'category' => fake()->randomElement([
+            'category' => $this->faker->randomElement([
                 ExpenseCategory::EmployeeSalary,
                 ExpenseCategory::DriverWage,
                 ExpenseCategory::Overtime,
