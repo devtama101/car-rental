@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($defaultUsers as $data) {
-            $user = User::updateOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            Person::updateOrCreate(
+            Person::firstOrCreate(
                 ['user_id' => $user->id],
                 ['type' => $data['type']->value],
             );
@@ -55,7 +55,7 @@ class DatabaseSeeder extends Seeder
         for ($i = 2; $i <= 3; $i++) {
             $email = "employee{$i}@example.com";
 
-            $user = User::updateOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $email],
                 [
                     'name' => "Employee {$i}",
@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            Person::updateOrCreate(
+            Person::firstOrCreate(
                 ['user_id' => $user->id],
                 ['type' => PersonType::Employee->value],
             );
@@ -74,7 +74,7 @@ class DatabaseSeeder extends Seeder
         for ($i = 2; $i <= 11; $i++) {
             $email = "customer{$i}@example.com";
 
-            $user = User::updateOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $email],
                 [
                     'name' => "Customer {$i}",
@@ -83,7 +83,7 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            Person::updateOrCreate(
+            Person::firstOrCreate(
                 ['user_id' => $user->id],
                 ['type' => PersonType::Customer->value],
             );
@@ -93,7 +93,7 @@ class DatabaseSeeder extends Seeder
         for ($i = 1; $i <= 5; $i++) {
             $email = "driver{$i}@example.com";
 
-            $user = User::updateOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $email],
                 [
                     'name' => "Driver {$i}",
@@ -102,7 +102,7 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            Person::updateOrCreate(
+            Person::firstOrCreate(
                 ['user_id' => $user->id],
                 [
                     'type' => PersonType::Driver->value,
@@ -151,7 +151,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($vehicleData as $data) {
-            Vehicle::updateOrCreate(
+            Vehicle::firstOrCreate(
                 ['license_plate' => $data['license_plate']],
                 [
                     'name' => $data['name'],
