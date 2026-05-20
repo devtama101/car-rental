@@ -20,7 +20,6 @@ use Faker\Generator;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -42,7 +41,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => $data['name'],
                     'email_verified_at' => now(),
-                    'password' => Hash::make('password'),
+                    'password' => 'password',
                 ],
             );
 
@@ -61,7 +60,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => "Employee {$i}",
                     'email_verified_at' => now(),
-                    'password' => Hash::make('password'),
+                    'password' => 'password',
                 ],
             );
 
@@ -80,7 +79,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => "Customer {$i}",
                     'email_verified_at' => now(),
-                    'password' => Hash::make('password'),
+                    'password' => 'password',
                 ],
             );
 
@@ -99,7 +98,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => "Driver {$i}",
                     'email_verified_at' => now(),
-                    'password' => Hash::make('password'),
+                    'password' => 'password',
                 ],
             );
 
