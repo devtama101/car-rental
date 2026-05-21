@@ -4,6 +4,7 @@ namespace App\Filament\Auth;
 
 use App\Enums\PersonType;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -13,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 class Login extends BaseLogin
 {
-    public function authenticate(): ?\Filament\Auth\Http\Responses\Contracts\LoginResponse
+    public function authenticate(): ?LoginResponse
     {
         try {
             $this->rateLimit(5);
@@ -43,25 +44,25 @@ class Login extends BaseLogin
 
         session()->regenerate();
 
-        $this->redirectBasedOnRole();
+        $this->setRedirectBasedOnRole();
 
-        return null;
+        return app(LoginResponse::class);
     }
 
-    protected function redirectBasedOnRole(): void
+    protected function setRedirectBasedOnRole(): void
     {
         $type = DB::table('people')
             ->where('user_id', auth()->id())
             ->whereNull('deleted_at')
             ->value('type');
 
-        $url = match ($type) {
-            PersonType::SuperAdmin->value, PersonType::Admin->value => Filament::getUrl('admin'),
-            PersonType::Employee->value => Filament::getUrl('employee'),
-            default => Filament::getUrl('customer'),
+        $panel = match ($type) {
+            PersonType::SuperAdmin->value, PersonType::Admin->value => 'admin',
+            PersonType::Employee->value => 'employee',
+            default => 'customer',
         };
 
-        $this->redirect($url);
+        session()->put('url.intended', Filament::getUrl($panel));
     }
 
     public function getTitle(): string | Htmlable
