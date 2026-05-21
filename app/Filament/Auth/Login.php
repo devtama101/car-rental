@@ -4,7 +4,6 @@ namespace App\Filament\Auth;
 
 use App\Enums\PersonType;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
-use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -14,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class Login extends BaseLogin
 {
-    public function authenticate(): ?LoginResponse
+    public function authenticate(): mixed
     {
         try {
             $this->rateLimit(5);
@@ -44,13 +43,6 @@ class Login extends BaseLogin
 
         session()->regenerate();
 
-        $this->setRedirectBasedOnRole();
-
-        return app(LoginResponse::class);
-    }
-
-    protected function setRedirectBasedOnRole(): void
-    {
         $type = DB::table('people')
             ->where('user_id', auth()->id())
             ->whereNull('deleted_at')
@@ -62,7 +54,7 @@ class Login extends BaseLogin
             default => 'customer',
         };
 
-        session()->put('url.intended', Filament::getUrl($panel));
+        $this->redirectIntended(Filament::getUrl($panel));
     }
 
     public function getTitle(): string | Htmlable
