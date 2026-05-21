@@ -4,16 +4,18 @@ namespace App\Filament\Auth;
 
 use App\Enums\PersonType;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class Login extends BaseLogin
 {
-    public function authenticate(): mixed
+    public function authenticate(): ?LoginResponse
     {
         try {
             $this->rateLimit(5);
@@ -54,7 +56,17 @@ class Login extends BaseLogin
             default => 'customer',
         };
 
-        $this->redirectIntended(Filament::getUrl($panel));
+        $url = Filament::getUrl($panel);
+
+        return new class($url) implements LoginResponse
+        {
+            public function __construct(private string $url) {}
+
+            public function toResponse($request): RedirectResponse
+            {
+                return redirect()->to($this->url);
+            }
+        };
     }
 
     public function getTitle(): string | Htmlable
