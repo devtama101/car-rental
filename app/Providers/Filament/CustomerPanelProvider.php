@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Auth\Login;
 use App\Filament\Customer\Pages\Dashboard;
 use App\Http\Middleware\SetLocale;
 use Filament\Http\Middleware\Authenticate;
@@ -27,7 +26,7 @@ class CustomerPanelProvider extends PanelProvider
         return $panel
             ->id('customer')
             ->path('dashboard')
-            ->login(Login::class)
+            ->login()
             ->brandName(__('Car Rental'))
             ->colors([
                 'primary' => Color::Green,
