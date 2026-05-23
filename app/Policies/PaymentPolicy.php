@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use App\Models\User;
 
@@ -33,7 +32,7 @@ class PaymentPolicy
             return true;
         }
 
-        return $user->isCustomer() && $payment->rental->user_id === $user->id && $payment->status === PaymentStatus::Pending->value;
+        return $user->isCustomer() && $payment->rental->user_id === $user->id;
     }
 
     public function delete(User $user, Payment $payment): bool

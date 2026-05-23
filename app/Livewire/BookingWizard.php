@@ -2,13 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Enums\PaymentStatus;
-use App\Enums\RentalItemStatus;
 use App\Enums\RentalStatus;
+use App\Models\Bank;
 use App\Models\Payment;
 use App\Models\Person;
 use App\Models\Rental;
-use App\Models\RentalItem;
 use App\Models\User;
 use App\Models\Vehicle;
 use Carbon\Carbon;
@@ -61,6 +59,8 @@ class BookingWizard extends Component implements HasSchemas
 
     public function form(Schema $schema): Schema
     {
+        $banks = Bank::all();
+
         return $schema
             ->components([
                 Wizard::make([
@@ -309,7 +309,25 @@ class BookingWizard extends Component implements HasSchemas
                                     'cash' => __('Cash'),
                                     'transfer' => __('Bank Transfer'),
                                 ])
-                                ->required(),
+                                ->required()
+                                ->live(),
+                            Select::make('bank_id')
+                                ->label(__('Bank'))
+                                ->options(function () use ($banks) {
+                                    return $banks->mapWithKeys(fn (Bank $bank) => [
+                                        $bank->id => "{$bank->name} ({$bank->code}) — {$bank->number} ({$bank->account_holder})",
+                                    ]);
+                                })
+                                ->searchable()
+                                ->visible(fn (Get $get): bool => $get('payment_method') === 'transfer')
+                                ->required(fn (Get $get): bool => $get('payment_method') === 'transfer'),
+                            FileUpload::make('payment_proof')
+                                ->label(__('Upload Payment Proof'))
+                                ->image()
+                                ->directory('payment-proofs')
+                                ->visible(fn (Get $get): bool => $get('payment_method') === 'transfer')
+                                ->nullable()
+                                ->helperText(__('Upload your transfer receipt/screenshot. You can also do this later from your dashboard.')),
                         ]),
                 ])
                     ->nextAction(fn (Action $action) => $action->label(__('Next'))->color('primary'))
@@ -536,42 +554,41 @@ class BookingWizard extends Component implements HasSchemas
 
             $vehicle = $this->getVehicle();
 
-            $rental = Rental::create([
+            $rentalData = [
                 'user_id' => $user->id,
-                'total_amount' => $this->totalAmount,
-                'status' => RentalStatus::Pending->value,
-                'delivery_method' => $data['delivery_method'] ?? null,
-                'delivery_address' => ($data['delivery_method'] ?? null) === 'delivery' ? ($data['delivery_address'] ?? null) : null,
-            ]);
-
-            $rentalItemData = [
-                'rental_id' => $rental->id,
                 'vehicle_id' => $vehicle->id,
                 'start_date' => $this->startDateTime,
                 'end_date' => $this->endDateTime,
                 'rental_rate_per_day' => $vehicle->rental_rate_per_day,
-                'status' => RentalItemStatus::Rented->value,
+                'total_amount' => $this->totalAmount,
+                'status' => RentalStatus::Pending->value,
+                'delivery_method' => $data['delivery_method'] ?? null,
+                'delivery_address' => ($data['delivery_method'] ?? null) === 'delivery' ? ($data['delivery_address'] ?? null) : null,
             ];
 
             if ($this->driverOption === 'with-driver' && $this->driverId) {
                 $driver = Person::find($this->driverId);
-                $rentalItemData['driver_id'] = $this->driverId;
-                $rentalItemData['driver_fee_per_day'] = $driver->driver_fee_per_day;
+                $rentalData['driver_id'] = $this->driverId;
+                $rentalData['driver_fee_per_day'] = $driver->driver_fee_per_day;
             }
 
-            RentalItem::create($rentalItemData);
+            $rental = Rental::create($rentalData);
+
+            $isTransfer = ($data['payment_method'] ?? '') === 'transfer';
 
             Payment::create([
                 'rental_id' => $rental->id,
                 'amount' => $this->totalAmount,
                 'method' => $data['payment_method'],
-                'status' => PaymentStatus::Pending->value,
+                'bank_id' => $isTransfer ? ($data['bank_id'] ?? null) : null,
+                'proof_file_path' => $isTransfer ? ($data['payment_proof'] ?? null) : null,
+
                 'date' => now()->toDateString(),
             ]);
 
             DB::commit();
 
-            $this->dispatch('booking-completed', redirectUrl: Auth::check() ? '/dashboard' : '/');
+            $this->dispatch('booking-completed', redirectUrl: Auth::check() ? '/dashboard' : '/dashboard/login');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

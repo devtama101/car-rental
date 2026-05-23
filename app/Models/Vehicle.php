@@ -27,8 +27,8 @@ class Vehicle extends Model
         'rental_rate_per_day',
     ];
 
-    public function rentalItems(): HasMany
+    public function rentals(): HasMany
     {
-        return $this->hasMany(RentalItem::class);
+        return $this->hasMany(Rental::class);
     }
 }

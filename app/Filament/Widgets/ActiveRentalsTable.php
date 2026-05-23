@@ -26,21 +26,19 @@ class ActiveRentalsTable extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn (): Builder => Rental::with(['user', 'rentalItems.vehicle'])
+            ->query(fn (): Builder => Rental::with(['user', 'vehicle'])
                 ->whereIn('status', [
                     RentalStatus::Confirmed->value,
                     RentalStatus::Active->value,
                 ])
                 ->latest())
             ->columns([
-                ImageColumn::make('vehicle_image')
+                ImageColumn::make('vehicle.image')
                     ->label('')
-                    ->getStateUsing(fn (Rental $record): ?string => $record->rentalItems->first()?->vehicle?->image)
                     ->circular()
                     ->size(40),
-                TextColumn::make('vehicle_name')
+                TextColumn::make('vehicle.name')
                     ->label(__('Vehicle'))
-                    ->getStateUsing(fn (Rental $record): string => $record->rentalItems->first()?->vehicle?->name ?? '-')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
@@ -49,13 +47,12 @@ class ActiveRentalsTable extends TableWidget
                     ->sortable(),
                 TextColumn::make('period')
                     ->label(__('Period'))
-                    ->getStateUsing(function (Rental $record): string {
-                        $item = $record->rentalItems->first();
-                        if (! $item || ! $item->start_date || ! $item->end_date) {
+                    ->state(function (Rental $record): string {
+                        if (! $record->start_date || ! $record->end_date) {
                             return '-';
                         }
 
-                        return $item->start_date->format('d M').' — '.$item->end_date->format('d M');
+                        return $record->start_date->format('d M').' — '.$record->end_date->format('d M');
                     }),
                 TextColumn::make('status')
                     ->label(__('Status'))

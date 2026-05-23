@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Rentals\Tables;
 
-use App\Enums\PaymentStatus;
 use App\Enums\RentalStatus;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -33,6 +32,16 @@ class RentalsTable
                     ->label(__('Customer'))
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('vehicle.name')
+                    ->label(__('Vehicle'))
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('period')
+                    ->label(__('Period'))
+                    ->sortable()
+                    ->state(fn ($record): string => $record->start_date && $record->end_date
+                        ? $record->start_date->format('d M Y').' — '.$record->end_date->format('d M Y')
+                        : '-'),
                 TextColumn::make('total_amount')
                     ->label(__('Total Amount'))
                     ->money('idr')
@@ -63,8 +72,7 @@ class RentalsTable
                     ->label('Confirm')
                     ->color('warning')
                     ->icon('heroicon-o-check')
-                    ->visible(fn ($record) => auth()->user()?->isAdmin() || auth()->user()?->isEmployee())
-                    ->visible(fn ($record) => $record->status === RentalStatus::Pending->value)
+                    ->visible(fn ($record) => (auth()->user()?->isAdmin() || auth()->user()?->isEmployee()) && $record->status === RentalStatus::Pending->value)
                     ->requiresConfirmation()
                     ->modalHeading('Confirm Rental')
                     ->modalDescription('Are you sure you want to confirm this rental? This will move it from pending to confirmed status.')
@@ -77,8 +85,7 @@ class RentalsTable
                     ->label('Activate')
                     ->color('info')
                     ->icon('heroicon-o-play')
-                    ->visible(fn ($record) => auth()->user()?->isAdmin() || auth()->user()?->isEmployee())
-                    ->visible(fn ($record) => $record->status === RentalStatus::Confirmed->value)
+                    ->visible(fn ($record) => (auth()->user()?->isAdmin() || auth()->user()?->isEmployee()) && $record->status === RentalStatus::Confirmed->value)
                     ->requiresConfirmation()
                     ->modalHeading('Activate Rental')
                     ->modalDescription('Are you sure you want to activate this rental? The rental period will begin.')
@@ -91,19 +98,18 @@ class RentalsTable
                     ->label('Complete')
                     ->color('success')
                     ->icon('heroicon-o-check-circle')
-                    ->visible(fn ($record) => auth()->user()?->isAdmin() || auth()->user()?->isEmployee())
-                    ->visible(fn ($record) => $record->status === RentalStatus::Active->value)
+                    ->visible(fn ($record) => (auth()->user()?->isAdmin() || auth()->user()?->isEmployee()) && $record->status === RentalStatus::Active->value)
                     ->requiresConfirmation()
                     ->modalHeading('Complete Rental')
                     ->modalDescription('Are you sure you want to mark this rental as completed? This action cannot be undone.')
                     ->modalSubmitActionLabel('Yes, complete')
                     ->action(function ($record) {
-                        $hasPaid = $record->payments()->where('status', PaymentStatus::Paid->value)->exists();
+                        $hasProof = $record->payments()->whereNotNull('proof_file_path')->exists();
 
-                        if (! $hasPaid) {
+                        if (! $hasProof) {
                             Notification::make()
                                 ->title('Cannot complete rental')
-                                ->body('This rental has no paid payment. Please verify payment before completing.')
+                                ->body('This rental has no payment proof uploaded. Please upload payment proof before completing.')
                                 ->warning()
                                 ->send();
 
@@ -117,8 +123,7 @@ class RentalsTable
                     ->label('Cancel')
                     ->color('danger')
                     ->icon('heroicon-o-x-circle')
-                    ->visible(fn ($record) => auth()->user()?->isAdmin() || auth()->user()?->isEmployee())
-                    ->visible(fn ($record) => in_array($record->status, [
+                    ->visible(fn ($record) => (auth()->user()?->isAdmin() || auth()->user()?->isEmployee()) && in_array($record->status, [
                         RentalStatus::Pending->value,
                         RentalStatus::Confirmed->value,
                     ]))

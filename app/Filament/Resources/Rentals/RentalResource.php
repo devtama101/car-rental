@@ -6,7 +6,6 @@ use App\Filament\Resources\Rentals\Pages\CreateRental;
 use App\Filament\Resources\Rentals\Pages\EditRental;
 use App\Filament\Resources\Rentals\Pages\ListRentals;
 use App\Filament\Resources\Rentals\Pages\ViewRental;
-use App\Filament\Resources\Rentals\RelationManagers\RentalItemsRelationManager;
 use App\Filament\Resources\Rentals\Schemas\RentalForm;
 use App\Filament\Resources\Rentals\Schemas\RentalInfolist;
 use App\Filament\Resources\Rentals\Tables\RentalsTable;
@@ -55,9 +54,7 @@ class RentalResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            RentalItemsRelationManager::class,
-        ];
+        return [];
     }
 
     public static function getPages(): array

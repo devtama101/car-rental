@@ -1,16 +1,19 @@
 <?php
 
-use App\Enums\PaymentStatus;
 use App\Enums\RentalStatus;
-use App\Models\Payment;
 use App\Models\Person;
 use App\Models\Rental;
 use App\Models\User;
+use App\Models\Vehicle;
 
 test('customer can view rental with upload payment action', function () {
     $customer = User::factory()->has(Person::factory()->customer())->create();
+    $vehicle = Vehicle::factory()->create();
     $rental = Rental::factory()->create([
         'user_id' => $customer->id,
+        'vehicle_id' => $vehicle->id,
+        'start_date' => now()->addDay(),
+        'end_date' => now()->addDays(3),
         'status' => RentalStatus::Pending->value,
     ]);
 
@@ -20,31 +23,40 @@ test('customer can view rental with upload payment action', function () {
     $response->assertOk();
 });
 
-test('payment proof upload creates payment record', function () {
+test('payment proof upload updates existing payment record', function () {
     $customer = User::factory()->has(Person::factory()->customer())->create();
+    $vehicle = Vehicle::factory()->create();
     $rental = Rental::factory()->create([
         'user_id' => $customer->id,
+        'vehicle_id' => $vehicle->id,
+        'start_date' => now()->addDay(),
+        'end_date' => now()->addDays(3),
         'status' => RentalStatus::Pending->value,
     ]);
 
-    expect(Payment::count())->toBe(0);
-
-    $rental->payments()->create([
+    $payment = $rental->payments()->create([
         'amount' => $rental->total_amount,
         'method' => 'transfer',
-        'proof_file_path' => 'payment-proofs/test.jpg',
-        'status' => PaymentStatus::Pending->value,
         'date' => now()->toDateString(),
     ]);
 
-    expect(Payment::count())->toBe(1);
-    expect($rental->payments()->first()->proof_file_path)->toBe('payment-proofs/test.jpg');
+    expect($payment->proof_file_path)->toBeNull();
+
+    $payment->update([
+        'proof_file_path' => 'payment-proofs/test.jpg',
+    ]);
+
+    expect($payment->fresh()->proof_file_path)->toBe('payment-proofs/test.jpg');
 });
 
 test('rental status transitions work correctly', function () {
     $customer = User::factory()->has(Person::factory()->customer())->create();
+    $vehicle = Vehicle::factory()->create();
     $rental = Rental::factory()->create([
         'user_id' => $customer->id,
+        'vehicle_id' => $vehicle->id,
+        'start_date' => now()->addDay(),
+        'end_date' => now()->addDays(3),
         'status' => RentalStatus::Pending->value,
     ]);
 
@@ -66,14 +78,5 @@ test('admin can view payment list', function () {
     $this->actingAs($admin);
 
     $response = $this->get('/admin/payments');
-    $response->assertOk();
-});
-
-test('employee can access payment verification page', function () {
-    $employee = User::factory()->has(Person::factory()->employee())->create();
-
-    $this->actingAs($employee);
-
-    $response = $this->get('/employee/payment-verification');
     $response->assertOk();
 });

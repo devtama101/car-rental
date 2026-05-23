@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Enums\RentalItemStatus;
-use App\Models\RentalItem;
+use App\Enums\RentalStatus;
+use App\Models\Rental;
 use App\Models\Vehicle;
 use Carbon\Carbon;
 use Livewire\Attributes\On;
@@ -47,8 +47,12 @@ class CarListing extends Component
     public function getAvailableVehiclesProperty()
     {
         if ($this->startDate && $this->endDate) {
-            $unavailableIds = RentalItem::query()
-                ->where('status', RentalItemStatus::Rented->value)
+            $unavailableIds = Rental::query()
+                ->whereIn('status', [
+                    RentalStatus::Pending->value,
+                    RentalStatus::Confirmed->value,
+                    RentalStatus::Active->value,
+                ])
                 ->where(function ($query) {
                     $query->whereBetween('start_date', [$this->startDate, $this->endDate])
                         ->orWhereBetween('end_date', [$this->startDate, $this->endDate])

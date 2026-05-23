@@ -2,12 +2,13 @@
 
 namespace App\Filament\Customer\Resources\MyRentalResource\Pages;
 
-use App\Enums\PaymentStatus;
 use App\Filament\Customer\Resources\MyRentalResource;
+use App\Models\Bank;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Utilities\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -18,10 +19,19 @@ class ViewMyRental extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('back')
+                ->label(__('Back to List'))
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->url(fn () => static::getResource()::getUrl('index')),
             Action::make('uploadPayment')
                 ->label(__('Upload Payment Proof'))
                 ->icon('heroicon-o-arrow-up-on-square')
-                ->visible(fn () => $this->getRecord()->payment_status === 'unpaid')
+                ->visible(function (): bool {
+                    $payment = $this->getRecord()->payments->first();
+
+                    return $payment && ! $payment->proof_file_path;
+                })
                 ->form([
                     TextInput::make('amount')
                         ->numeric()
@@ -33,7 +43,18 @@ class ViewMyRental extends ViewRecord
                             'transfer' => __('transfer'),
                         ])
                         ->required()
+                        ->live()
                         ->default('transfer'),
+                    Select::make('bank_id')
+                        ->label(__('Bank'))
+                        ->options(function () {
+                            return Bank::all()->mapWithKeys(fn (Bank $bank) => [
+                                $bank->id => "{$bank->name} ({$bank->code}) — {$bank->number} ({$bank->account_holder})",
+                            ]);
+                        })
+                        ->searchable()
+                        ->visible(fn (Get $get): bool => $get('method') === 'transfer')
+                        ->nullable(),
                     FileUpload::make('proof_file_path')
                         ->label(__('Payment Proof'))
                         ->image()
@@ -41,12 +62,13 @@ class ViewMyRental extends ViewRecord
                         ->directory('payment-proofs'),
                 ])
                 ->action(function (array $data): void {
-                    $this->getRecord()->payments()->create([
+                    $payment = $this->getRecord()->payments->first();
+                    $payment->update([
                         'amount' => $data['amount'],
                         'method' => $data['method'],
+                        'bank_id' => $data['bank_id'] ?? null,
                         'proof_file_path' => $data['proof_file_path'],
-                        'status' => PaymentStatus::Pending->value,
-                        'date' => now()->toDateString(),
+
                     ]);
 
                     Notification::make()

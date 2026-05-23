@@ -30,16 +30,10 @@ class PaymentsTable
                 TextColumn::make('method')
                     ->label(__('Method'))
                     ->badge(),
-                TextColumn::make('status')
-                    ->label(__('Status'))
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'gray',
-                        'paid' => 'success',
-                        'refunded' => 'warning',
-                        default => 'gray',
-                    })
-                    ->sortable(),
+                TextColumn::make('bank.name')
+                    ->label(__('Bank'))
+                    ->sortable()
+                    ->placeholder('-'),
                 TextColumn::make('date')
                     ->label(__('Date'))
                     ->date()

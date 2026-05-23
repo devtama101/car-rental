@@ -30,19 +30,17 @@ class PaymentForm
                         'cash' => __('cash'),
                         'transfer' => __('transfer'),
                     ])
-                    ->required(),
+                    ->required()
+                    ->live(),
+                Select::make('bank_id')
+                    ->label(__('Bank'))
+                    ->relationship('bank', 'name')
+                    ->visible(fn ($get) => $get('method') === 'transfer')
+                    ->nullable(),
                 FileUpload::make('proof_file_path')
                     ->label(__('Payment Proof'))
                     ->image()
                     ->directory('payment-proofs'),
-                Select::make('status')
-                    ->label(__('Status'))
-                    ->options([
-                        'pending' => __('pending'),
-                        'paid' => __('paid'),
-                        'refunded' => __('refunded'),
-                    ])
-                    ->required(),
                 DatePicker::make('date')
                     ->label(__('Date'))
                     ->required(),

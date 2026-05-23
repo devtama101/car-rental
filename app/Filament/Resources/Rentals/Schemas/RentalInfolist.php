@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\Rentals\Schemas;
 
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class RentalInfolist
@@ -11,31 +14,80 @@ class RentalInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('created_at')
-                    ->label(__('Created At'))
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->label(__('Updated At'))
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('user.name')
-                    ->label(__('User Name'))
-                    ->placeholder('-'),
-                TextEntry::make('total_amount')
-                    ->label(__('Total Amount'))
-                    ->money('idr')
-                    ->placeholder('-'),
-                TextEntry::make('status')
-                    ->label(__('Status'))
-                    ->badge()
-                    ->placeholder('-'),
-                TextEntry::make('delivery_method')
-                    ->label(__('Delivery Method'))
-                    ->placeholder('-'),
-                TextEntry::make('delivery_address')
-                    ->label(__('Delivery Address'))
-                    ->placeholder('-'),
+                Section::make(__('Rental Details'))
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label(__('Created At'))
+                            ->dateTime()
+                            ->placeholder('-'),
+                        TextEntry::make('updated_at')
+                            ->label(__('Updated At'))
+                            ->dateTime()
+                            ->placeholder('-'),
+                        TextEntry::make('user.name')
+                            ->label(__('Customer'))
+                            ->placeholder('-'),
+                        TextEntry::make('vehicle.name')
+                            ->label(__('Vehicle'))
+                            ->placeholder('-'),
+                        TextEntry::make('start_date')
+                            ->label(__('Start Date'))
+                            ->dateTime()
+                            ->placeholder('-'),
+                        TextEntry::make('end_date')
+                            ->label(__('End Date'))
+                            ->dateTime()
+                            ->placeholder('-'),
+                        TextEntry::make('rental_rate_per_day')
+                            ->label(__('Rental Rate Per Day'))
+                            ->money('idr')
+                            ->placeholder('-'),
+                        TextEntry::make('driver.user.name')
+                            ->label(__('Driver'))
+                            ->placeholder('-'),
+                        TextEntry::make('driver_fee_per_day')
+                            ->label(__('Driver Fee Per Day'))
+                            ->money('idr')
+                            ->placeholder('-'),
+                        TextEntry::make('total_amount')
+                            ->label(__('Total Amount'))
+                            ->money('idr')
+                            ->placeholder('-'),
+                        TextEntry::make('status')
+                            ->label(__('Status'))
+                            ->badge()
+                            ->placeholder('-'),
+                        TextEntry::make('delivery_method')
+                            ->label(__('Delivery Method'))
+                            ->placeholder('-'),
+                        TextEntry::make('delivery_address')
+                            ->label(__('Delivery Address'))
+                            ->placeholder('-'),
+                    ])
+                    ->columns(2),
+                Section::make(__('Payment Details'))
+                    ->schema([
+                        RepeatableEntry::make('payments')
+                            ->hiddenLabel()
+                            ->schema([
+                                TextEntry::make('method')
+                                    ->label(__('Method'))
+                                    ->formatStateUsing(fn (string $state): string => __($state)),
+                                TextEntry::make('bank.name')
+                                    ->label(__('Bank'))
+                                    ->placeholder('-'),
+                                TextEntry::make('amount')
+                                    ->label(__('Amount'))
+                                    ->money('idr'),
+                                TextEntry::make('date')
+                                    ->label(__('Payment Date'))
+                                    ->date(),
+                                ImageEntry::make('proof_file_path')
+                                    ->label(__('Payment Proof'))
+                                    ->visible(fn ($record): bool => filled($record->proof_file_path)),
+                            ])
+                            ->columns(3),
+                    ]),
             ]);
     }
 }

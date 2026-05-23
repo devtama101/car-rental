@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Rentals\Schemas;
 
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -19,6 +20,36 @@ class RentalForm
                     ->searchable()
                     ->preload()
                     ->required(),
+                Select::make('vehicle_id')
+                    ->label(__('Vehicle'))
+                    ->relationship('vehicle', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                DateTimePicker::make('start_date')
+                    ->label(__('Start Date'))
+                    ->required(),
+                DateTimePicker::make('end_date')
+                    ->label(__('End Date'))
+                    ->required(),
+                TextInput::make('rental_rate_per_day')
+                    ->label(__('Rental Rate Per Day'))
+                    ->numeric()
+                    ->required(),
+                Select::make('driver_id')
+                    ->label(__('Driver'))
+                    ->relationship(
+                        name: 'driver',
+                        titleAttribute: 'id',
+                        modifyQueryUsing: fn ($query) => $query->where('type', 'driver'),
+                    )
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->user->name)
+                    ->searchable()
+                    ->nullable(),
+                TextInput::make('driver_fee_per_day')
+                    ->label(__('Driver Fee Per Day'))
+                    ->numeric()
+                    ->nullable(),
                 TextInput::make('total_amount')
                     ->label(__('Total Amount'))
                     ->numeric()

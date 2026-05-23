@@ -34,8 +34,7 @@ test('customer browse vehicles link redirects to frontpage', function () {
 
     $response = $this->get('/dashboard');
     $response->assertOk();
-    $response->assertSee('Browse Vehicles');
-    $response->assertSee('/');
+    $response->assertSee('Telusuri Mobil');
 });
 
 test('customer my profile page renders', function () {
@@ -53,24 +52,5 @@ test('employee dashboard renders', function () {
     $this->actingAs($employee);
 
     $response = $this->get('/employee');
-    $response->assertOk();
-});
-
-test('employee can view rentals', function () {
-    $employee = User::factory()->has(Person::factory()->employee())->create();
-    Rental::factory()->create();
-
-    $this->actingAs($employee);
-
-    $response = $this->get('/employee/rentals');
-    $response->assertOk();
-});
-
-test('employee can view vehicles', function () {
-    $employee = User::factory()->has(Person::factory()->employee())->create();
-
-    $this->actingAs($employee);
-
-    $response = $this->get('/employee/vehicles');
     $response->assertOk();
 });

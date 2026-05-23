@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Enums\PaymentStatus;
 use App\Models\Expense;
 use App\Models\Payment;
 use Filament\Widgets\StatsOverviewWidget;
@@ -18,12 +17,12 @@ class DashboardStats extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $revenue = Payment::where('status', PaymentStatus::Paid->value)
+        $revenue = Payment::whereNotNull('proof_file_path')
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount');
 
-        $previousRevenue = Payment::where('status', PaymentStatus::Paid->value)
+        $previousRevenue = Payment::whereNotNull('proof_file_path')
             ->whereMonth('date', now()->subMonth()->month)
             ->whereYear('date', now()->subMonth()->year)
             ->sum('amount');

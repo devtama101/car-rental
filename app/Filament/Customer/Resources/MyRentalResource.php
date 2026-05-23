@@ -2,16 +2,17 @@
 
 namespace App\Filament\Customer\Resources;
 
-use App\Enums\PaymentStatus;
 use App\Enums\RentalStatus;
 use App\Filament\Customer\Resources\MyRentalResource\Pages\ListMyRentals;
 use App\Filament\Customer\Resources\MyRentalResource\Pages\ViewMyRental;
+use App\Models\Bank;
 use App\Models\Rental;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Utilities\Get;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -41,7 +42,7 @@ class MyRentalResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('user_id', auth()->id())->with('payments');
+        return parent::getEloquentQuery()->where('user_id', auth()->id())->with(['payments', 'vehicle', 'driver.user']);
     }
 
     public static function infolist(Schema $schema): Schema
@@ -64,6 +65,17 @@ class MyRentalResource extends Resource
                                 default => 'gray',
                             })
                             ->formatStateUsing(fn (string $state): string => __($state)),
+                        TextEntry::make('vehicle.name')
+                            ->label(__('Vehicle'))
+                            ->placeholder('-'),
+                        TextEntry::make('start_date')
+                            ->label(__('Start Date'))
+                            ->dateTime()
+                            ->placeholder('-'),
+                        TextEntry::make('end_date')
+                            ->label(__('End Date'))
+                            ->dateTime()
+                            ->placeholder('-'),
                         TextEntry::make('total_amount')
                             ->money('idr'),
                         TextEntry::make('delivery_method')
@@ -74,41 +86,20 @@ class MyRentalResource extends Resource
                             ->placeholder('-'),
                     ])
                     ->columns(2),
-                Section::make(__('Payment Status'))
+                Section::make(__('Payment'))
                     ->schema([
-                        TextEntry::make('payment_status')
-                            ->label(__('Payment Status'))
-                            ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'paid' => 'success',
-                                'pending' => 'warning',
-                                'unpaid' => 'danger',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'paid' => __('Paid'),
-                                'pending' => __('Verifying'),
-                                'unpaid' => __('Unpaid'),
-                                default => $state,
-                            }),
                         RepeatableEntry::make('payments')
-                            ->label(__('Payment History'))
+                            ->hiddenLabel()
                             ->schema([
                                 TextEntry::make('method')
                                     ->label(__('Method'))
                                     ->formatStateUsing(fn (string $state): string => __($state)),
+                                TextEntry::make('bank.name')
+                                    ->label(__('Bank'))
+                                    ->placeholder('-'),
                                 TextEntry::make('amount')
                                     ->label(__('Amount'))
                                     ->money('idr'),
-                                TextEntry::make('status')
-                                    ->badge()
-                                    ->color(fn (string $state): string => match ($state) {
-                                        'paid' => 'success',
-                                        'pending' => 'warning',
-                                        'refunded' => 'danger',
-                                        default => 'gray',
-                                    })
-                                    ->formatStateUsing(fn (string $state): string => __($state)),
                                 TextEntry::make('date')
                                     ->label(__('Payment Date'))
                                     ->date(),
@@ -129,25 +120,13 @@ class MyRentalResource extends Resource
                     ->label(__('Booking Date'))
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('vehicle.name')
+                    ->label(__('Vehicle'))
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('total_amount')
                     ->money('idr')
                     ->sortable(),
-                TextColumn::make('payment_status')
-                    ->label(__('Payment'))
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'paid' => 'success',
-                        'pending' => 'warning',
-                        'unpaid' => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'paid' => __('Paid'),
-                        'pending' => __('Verifying'),
-                        'unpaid' => __('Unpaid'),
-                        default => $state,
-                    })
-                    ->sortable(false),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -180,9 +159,13 @@ class MyRentalResource extends Resource
                             ->send();
                     }),
                 Action::make('uploadPayment')
-                    ->label(__('Upload Payment'))
+                    ->label(__('Upload Payment Proof'))
                     ->icon('heroicon-o-arrow-up-on-square')
-                    ->visible(fn (Rental $record) => $record->payment_status === 'unpaid')
+                    ->visible(function (Rental $record): bool {
+                        $payment = $record->payments->first();
+
+                        return $payment && ! $payment->proof_file_path;
+                    })
                     ->form([
                         TextInput::make('amount')
                             ->label(__('Amount'))
@@ -196,7 +179,18 @@ class MyRentalResource extends Resource
                                 'transfer' => __('Bank Transfer'),
                             ])
                             ->required()
+                            ->live()
                             ->default('transfer'),
+                        Select::make('bank_id')
+                            ->label(__('Bank'))
+                            ->options(function () {
+                                return Bank::all()->mapWithKeys(fn (Bank $bank) => [
+                                    $bank->id => "{$bank->name} ({$bank->code}) — {$bank->number} ({$bank->account_holder})",
+                                ]);
+                            })
+                            ->searchable()
+                            ->visible(fn (Get $get): bool => $get('method') === 'transfer')
+                            ->nullable(),
                         FileUpload::make('proof_file_path')
                             ->label(__('Payment Proof'))
                             ->image()
@@ -204,12 +198,13 @@ class MyRentalResource extends Resource
                             ->directory('payment-proofs'),
                     ])
                     ->action(function (array $data, Rental $record): void {
-                        $record->payments()->create([
+                        $payment = $record->payments->first();
+                        $payment->update([
                             'amount' => $data['amount'],
                             'method' => $data['method'],
+                            'bank_id' => $data['bank_id'] ?? null,
                             'proof_file_path' => $data['proof_file_path'],
-                            'status' => PaymentStatus::Pending->value,
-                            'date' => now()->toDateString(),
+
                         ]);
 
                         Notification::make()

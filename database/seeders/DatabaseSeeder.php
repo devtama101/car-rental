@@ -4,16 +4,14 @@ namespace Database\Seeders;
 
 use App\Enums\ExpenseCategory;
 use App\Enums\PaymentMethod;
-use App\Enums\PaymentStatus;
 use App\Enums\PersonType;
-use App\Enums\RentalItemStatus;
 use App\Enums\RentalStatus;
 use App\Enums\TransmissionType;
+use App\Models\Bank;
 use App\Models\Expense;
 use App\Models\Payment;
 use App\Models\Person;
 use App\Models\Rental;
-use App\Models\RentalItem;
 use App\Models\User;
 use App\Models\Vehicle;
 use Faker\Generator;
@@ -28,6 +26,23 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        // ─── Banks (idempotent) ─────────────────────────────
+        $bankData = [
+            ['name' => 'BCA', 'code' => '014', 'number' => '1234567890', 'account_holder' => 'Car Rental Indonesia'],
+            ['name' => 'Bank Mandiri', 'code' => '008', 'number' => '0987654321', 'account_holder' => 'Car Rental Indonesia'],
+            ['name' => 'BNI', 'code' => '009', 'number' => '1122334455', 'account_holder' => 'Car Rental Indonesia'],
+            ['name' => 'BRI', 'code' => '002', 'number' => '5566778899', 'account_holder' => 'Car Rental Indonesia'],
+        ];
+
+        foreach ($bankData as $data) {
+            Bank::firstOrCreate(
+                ['code' => $data['code'], 'number' => $data['number']],
+                $data,
+            );
+        }
+
+        $banks = Bank::all();
+
         // ─── Users & People (4 core users) ──────────────────────
         $defaultUsers = [
             ['name' => 'Super Admin User', 'email' => 'superadmin@example.com', 'type' => PersonType::SuperAdmin],
@@ -107,10 +122,8 @@ class DatabaseSeeder extends Seeder
             RentalStatus $status,
             string $startOffset,
             int $days,
-            ?PaymentStatus $paymentStatus = null,
             ?PaymentMethod $paymentMethod = null,
-            ?RentalItemStatus $itemStatus = null,
-        ) use ($customer) {
+        ) use ($customer, $banks) {
             $startDate = Carbon::parse($startOffset);
             $endDate = $startDate->copy()->addDays($days);
             $delivery = $this->faker()->randomElement(['pickup', 'delivery']);
@@ -118,38 +131,36 @@ class DatabaseSeeder extends Seeder
 
             $rental = Rental::factory()->create([
                 'user_id' => $customer->id,
+                'vehicle_id' => $vehicle->id,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'rental_rate_per_day' => $vehicle->rental_rate_per_day,
                 'status' => $status->value,
                 'total_amount' => $totalAmount,
                 'delivery_method' => $delivery,
                 'delivery_address' => $delivery === 'delivery' ? $this->faker()->address() : null,
             ]);
 
-            RentalItem::factory()->create([
-                'rental_id' => $rental->id,
-                'vehicle_id' => $vehicle->id,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'rental_rate_per_day' => $vehicle->rental_rate_per_day,
-                'status' => ($itemStatus ?? RentalItemStatus::Rented)->value,
-            ]);
+            if ($paymentMethod) {
+                $method = $paymentMethod->value;
+                $isTransfer = $method === PaymentMethod::Transfer->value;
 
-            if ($paymentStatus) {
                 Payment::factory()->create([
                     'rental_id' => $rental->id,
                     'amount' => $totalAmount,
-                    'method' => ($paymentMethod ?? PaymentMethod::Cash)->value,
-                    'status' => $paymentStatus->value,
+                    'method' => $method,
+                    'bank_id' => $isTransfer ? $banks->random()->id : null,
                     'date' => $startDate->toDateString(),
                 ]);
             }
         };
 
         $createRental($vehicles[0], RentalStatus::Pending, now()->addDays(1)->toDateTimeString(), 3);
-        $createRental($vehicles[1], RentalStatus::Confirmed, now()->addDays(3)->toDateTimeString(), 4, PaymentStatus::Paid, PaymentMethod::Transfer);
-        $createRental($vehicles[2], RentalStatus::Active, now()->subDays(2)->toDateTimeString(), 5, PaymentStatus::Paid, PaymentMethod::Cash);
-        $createRental($vehicles[3], RentalStatus::Active, now()->subDays(1)->toDateTimeString(), 3, PaymentStatus::Pending);
-        $createRental($vehicles[4], RentalStatus::Completed, now()->subDays(14)->toDateTimeString(), 5, PaymentStatus::Paid, PaymentMethod::Transfer, RentalItemStatus::Returned);
-        $createRental($vehicles[5], RentalStatus::Completed, now()->subDays(7)->toDateTimeString(), 3, PaymentStatus::Paid, PaymentMethod::Cash, RentalItemStatus::Returned);
+        $createRental($vehicles[1], RentalStatus::Confirmed, now()->addDays(3)->toDateTimeString(), 4, PaymentMethod::Transfer);
+        $createRental($vehicles[2], RentalStatus::Active, now()->subDays(2)->toDateTimeString(), 5, PaymentMethod::Cash);
+        $createRental($vehicles[3], RentalStatus::Active, now()->subDays(1)->toDateTimeString(), 3, PaymentMethod::Transfer);
+        $createRental($vehicles[4], RentalStatus::Completed, now()->subDays(14)->toDateTimeString(), 5, PaymentMethod::Transfer);
+        $createRental($vehicles[5], RentalStatus::Completed, now()->subDays(7)->toDateTimeString(), 3, PaymentMethod::Cash);
         $createRental($vehicles[6], RentalStatus::Cancelled, now()->subDays(5)->toDateTimeString(), 2);
         $createRental($vehicles[7], RentalStatus::Cancelled, now()->subDays(10)->toDateTimeString(), 4);
 
@@ -234,7 +245,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->command?->info('Seed complete!');
         $this->command?->info('Users: '.User::count().' | People: '.Person::count().' | Vehicles: '.Vehicle::count());
-        $this->command?->info('Rentals: '.Rental::count().' | RentalItems: '.RentalItem::count().' | Payments: '.Payment::count());
+        $this->command?->info('Rentals: '.Rental::count().' | Payments: '.Payment::count().' | Banks: '.Bank::count());
         $this->command?->info('Expenses: '.Expense::count());
     }
 }

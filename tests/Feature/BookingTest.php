@@ -1,12 +1,11 @@
 <?php
 
-use App\Enums\RentalItemStatus;
 use App\Enums\RentalStatus;
 use App\Livewire\BookingWizard;
+use App\Models\Bank;
 use App\Models\Payment;
 use App\Models\Person;
 use App\Models\Rental;
-use App\Models\RentalItem;
 use App\Models\User;
 use App\Models\Vehicle;
 use Carbon\Carbon;
@@ -106,6 +105,7 @@ test('booking wizard completes full booking flow', function () {
 });
 
 test('booking creates all related records', function () {
+    $bank = Bank::factory()->create();
     $vehicle = Vehicle::factory()->create(['rental_rate_per_day' => 100_000]);
 
     Livewire::test(BookingWizard::class, ['vehicleId' => $vehicle->id])
@@ -119,14 +119,14 @@ test('booking creates all related records', function () {
         ->set('data.customer_address', 'Jl. Sudirman No. 10')
         ->set('data.customer_id_type', 'sim')
         ->set('data.payment_method', 'transfer')
+        ->set('data.bank_id', $bank->id)
         ->call('submit');
 
     expect(User::where('email', 'jane@example.com')->exists())->toBeTrue();
-    expect(Rental::where('status', RentalStatus::Pending->value)->exists())->toBeTrue();
-    expect(RentalItem::where('vehicle_id', $vehicle->id)
-        ->where('status', RentalItemStatus::Rented->value)
+    expect(Rental::where('vehicle_id', $vehicle->id)
+        ->where('status', RentalStatus::Pending->value)
         ->exists()
     )->toBeTrue();
-    expect(Payment::exists())->toBeTrue();
+    expect(Payment::where('method', 'transfer')->exists())->toBeTrue();
     expect(Person::where('phone', '087654321')->exists())->toBeTrue();
 });

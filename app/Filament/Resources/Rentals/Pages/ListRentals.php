@@ -20,6 +20,6 @@ class ListRentals extends ListRecords
 
     protected function getTableQuery(): Builder
     {
-        return parent::getTableQuery()->with('payments');
+        return parent::getTableQuery()->with(['vehicle', 'payments', 'driver.user']);
     }
 }

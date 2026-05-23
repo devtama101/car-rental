@@ -17,8 +17,8 @@ class Payment extends Model
         'rental_id',
         'amount',
         'method',
+        'bank_id',
         'proof_file_path',
-        'status',
         'date',
     ];
 
@@ -32,5 +32,10 @@ class Payment extends Model
     public function rental(): BelongsTo
     {
         return $this->belongsTo(Rental::class);
+    }
+
+    public function bank(): BelongsTo
+    {
+        return $this->belongsTo(Bank::class);
     }
 }

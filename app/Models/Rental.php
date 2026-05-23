@@ -16,49 +16,43 @@ class Rental extends Model
 
     protected $fillable = [
         'user_id',
+        'vehicle_id',
+        'start_date',
+        'end_date',
+        'driver_id',
+        'driver_fee_per_day',
+        'rental_rate_per_day',
         'total_amount',
         'status',
         'delivery_method',
         'delivery_address',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'datetime',
+            'end_date' => 'datetime',
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function rentalItems(): HasMany
+    public function vehicle(): BelongsTo
     {
-        return $this->hasMany(RentalItem::class);
+        return $this->belongsTo(Vehicle::class);
+    }
+
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(Person::class, 'driver_id');
     }
 
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
-    }
-
-    public function getPaymentStatusAttribute(): string
-    {
-        if ($this->relationLoaded('payments') && $this->payments->isNotEmpty()) {
-            if ($this->payments->contains('status', 'paid')) {
-                return 'paid';
-            }
-
-            if ($this->payments->contains('status', 'pending')) {
-                return 'pending';
-            }
-        }
-
-        $hasPaid = $this->payments()->where('status', 'paid')->exists();
-        if ($hasPaid) {
-            return 'paid';
-        }
-
-        $hasPending = $this->payments()->where('status', 'pending')->exists();
-        if ($hasPending) {
-            return 'pending';
-        }
-
-        return 'unpaid';
     }
 }
