@@ -24,6 +24,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 
 class MyRentalResource extends Resource
 {
@@ -42,7 +43,7 @@ class MyRentalResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('user_id', auth()->id())->with(['payments', 'vehicle', 'driver.user']);
+        return parent::getEloquentQuery()->where('user_id', auth()->id())->with(['payments', 'vehicle', 'driver.user', 'user.person']);
     }
 
     public static function infolist(Schema $schema): Schema
@@ -105,9 +106,31 @@ class MyRentalResource extends Resource
                                     ->date(),
                                 ImageEntry::make('proof_file_path')
                                     ->label(__('Payment Proof'))
+                                    ->height(120)
+                                    ->url(function (?string $state): ?string {
+                                        if (! $state) {
+                                            return null;
+                                        }
+
+                                        return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                                    }, shouldOpenInNewTab: true)
                                     ->visible(fn ($record): bool => filled($record->proof_file_path)),
                             ])
                             ->columns(3),
+                    ]),
+                Section::make(__('Your Documents'))
+                    ->schema([
+                        ImageEntry::make('user.person.id_file_path')
+                            ->label(__('ID Document'))
+                            ->height(200)
+                            ->url(function (?string $state): ?string {
+                                if (! $state) {
+                                    return null;
+                                }
+
+                                return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                            })
+                            ->visible(fn ($record): bool => filled($record->user?->person?->id_file_path)),
                     ]),
             ]);
     }

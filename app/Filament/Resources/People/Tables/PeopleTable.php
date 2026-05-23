@@ -5,8 +5,10 @@ namespace App\Filament\Resources\People\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class PeopleTable
 {
@@ -40,6 +42,17 @@ class PeopleTable
                 TextColumn::make('id_type')
                     ->label(__('Id Type'))
                     ->searchable()
+                    ->toggleable(),
+                ImageColumn::make('id_file_path')
+                    ->label(__('ID Doc'))
+                    ->size(60)
+                    ->url(function (?string $state): ?string {
+                        if (! $state) {
+                            return null;
+                        }
+
+                        return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                    }, shouldOpenInNewTab: true)
                     ->toggleable(),
                 TextColumn::make('driver_fee_per_day')
                     ->label(__('Driver Fee Per Day'))

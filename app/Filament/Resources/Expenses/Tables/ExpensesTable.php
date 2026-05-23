@@ -12,6 +12,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class ExpensesTable
 {
@@ -69,6 +70,14 @@ class ExpensesTable
 
                 ImageColumn::make('proof_file_path')
                     ->label(__('Proof'))
+                    ->size(60)
+                    ->url(function (?string $state): ?string {
+                        if (! $state) {
+                            return null;
+                        }
+
+                        return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                    }, shouldOpenInNewTab: true)
                     ->toggleable(),
 
                 TextColumn::make('creator.name')

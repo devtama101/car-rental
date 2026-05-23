@@ -7,6 +7,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class RentalInfolist
 {
@@ -84,9 +85,31 @@ class RentalInfolist
                                     ->date(),
                                 ImageEntry::make('proof_file_path')
                                     ->label(__('Payment Proof'))
+                                    ->height(120)
+                                    ->url(function (?string $state): ?string {
+                                        if (! $state) {
+                                            return null;
+                                        }
+
+                                        return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                                    }, shouldOpenInNewTab: true)
                                     ->visible(fn ($record): bool => filled($record->proof_file_path)),
                             ])
                             ->columns(3),
+                    ]),
+                Section::make(__('Customer Documents'))
+                    ->schema([
+                        ImageEntry::make('user.person.id_file_path')
+                            ->label(__('ID Document'))
+                            ->height(200)
+                            ->url(function (?string $state): ?string {
+                                if (! $state) {
+                                    return null;
+                                }
+
+                                return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                            })
+                            ->visible(fn ($record): bool => filled($record->user?->person?->id_file_path)),
                     ]),
             ]);
     }

@@ -9,6 +9,7 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class PaymentsTable
 {
@@ -40,6 +41,14 @@ class PaymentsTable
                     ->sortable(),
                 ImageColumn::make('proof_file_path')
                     ->label(__('Proof'))
+                    ->size(60)
+                    ->url(function (?string $state): ?string {
+                        if (! $state) {
+                            return null;
+                        }
+
+                        return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                    }, shouldOpenInNewTab: true)
                     ->toggleable(),
             ])
             ->filters([

@@ -16,7 +16,7 @@ class ViewRental extends ViewRecord
 
     protected function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['payments.bank', 'vehicle', 'driver.user']);
+        return parent::getEloquentQuery()->with(['payments.bank', 'vehicle', 'driver.user', 'user.person']);
     }
 
     protected function getHeaderActions(): array
