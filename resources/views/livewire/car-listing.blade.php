@@ -2,12 +2,7 @@
     @if ($selectedVehicleId)
         <livewire:booking-wizard :vehicleId="$selectedVehicleId" :key="$selectedVehicleId" />
     @else
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">{{ __('Car Rental') }}</h1>
-            <p class="mt-2 text-gray-600">{{ __('Browse our available cars and book your ride') }}</p>
-        </div>
-
-        <div class="flex gap-4 mb-8 justify-center">
+        <div id="booking" class="flex gap-4 mb-8 justify-center">
             <div>
                 <label for="start_date" class="block text-sm font-medium text-gray-700">{{ __('Start Date & Time') }}</label>
                 <input
