@@ -128,7 +128,7 @@ class MyRentalResource extends Resource
                                 }
 
                                 return route('file.view', ['path' => $state]);
-                            })
+                            }, shouldOpenInNewTab: true)
                             ->visible(fn ($record): bool => filled($record->user?->person?->id_file_path)),
                     ]),
             ]);
