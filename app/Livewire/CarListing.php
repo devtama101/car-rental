@@ -49,7 +49,6 @@ class CarListing extends Component
         if ($this->startDate && $this->endDate) {
             $unavailableIds = Rental::query()
                 ->whereIn('status', [
-                    RentalStatus::Pending->value,
                     RentalStatus::Confirmed->value,
                     RentalStatus::Active->value,
                 ])
