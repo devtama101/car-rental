@@ -9,7 +9,7 @@
                     type="datetime-local"
                     id="start_date"
                     wire:model.live="startDate"
-                    class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                    class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-accent-500 focus:ring-accent-500"
                 >
             </div>
             <div>
@@ -18,7 +18,7 @@
                     type="datetime-local"
                     id="end_date"
                     wire:model.live="endDate"
-                    class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                    class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-accent-500 focus:ring-accent-500"
                 >
             </div>
             @if ($startDate && $endDate)
@@ -34,16 +34,16 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @forelse ($vehicles as $vehicle)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg hover:border-green-200 transition-all duration-200">
-                    <div class="relative h-48 bg-gradient-to-br from-green-50 via-emerald-50 to-green-100">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg hover:border-accent-200 transition-all duration-200">
+                    <div class="relative h-48 bg-gradient-to-br from-accent-50 via-accent-100 to-accent-200">
                         @if ($vehicle->image)
                             <img src="{{ Storage::disk('public')->url($vehicle->image) }}" alt="{{ $vehicle->name }}" class="w-full h-full object-cover">
                         @else
                             <div class="w-full h-full flex flex-col items-center justify-center gap-2">
-                                <svg class="w-20 h-20 text-green-300" fill="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-20 h-20 text-accent-300" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M5 11l1.5-4.5h11l1.5 4.5M5 11h14M5 11l-1.15 3.45M19 11l1.15 3.45M5 14.45V17a2 2 0 002 2h10a2 2 0 002-2v-2.55M8 14h.01M16 14h.01M3 11l1.15-3.45A2 2 0 016.07 6h11.86a2 2 0 011.92 1.55L21 11M3 11h18"/>
                                 </svg>
-                                <span class="text-xs text-green-400 font-medium uppercase tracking-wider">{{ __('No Image') }}</span>
+                                <span class="text-xs text-accent-400 font-medium uppercase tracking-wider">{{ __('No Image') }}</span>
                             </div>
                         @endif
                         <span class="absolute top-2 right-2 px-2.5 py-1 bg-white/90 text-xs font-semibold text-gray-600 rounded-full shadow-sm capitalize border border-gray-100">
@@ -63,12 +63,12 @@
                         </div>
                         <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                             <div>
-                                <span class="text-green-600 font-bold text-lg">Rp {{ number_format($vehicle->rental_rate_per_day ?? 0, 0, ',', '.') }}</span>
+                                <span class="text-accent-600 font-bold text-lg">Rp {{ number_format($vehicle->rental_rate_per_day ?? 0, 0, ',', '.') }}</span>
                                 <span class="text-xs text-gray-400"> {{ __('\/day') }}</span>
                             </div>
                             <button
                                 wire:click="selectVehicle({{ $vehicle->id }})"
-                                class="px-4 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 active:bg-green-800 transition-colors shadow-sm"
+                                class="px-4 py-2.5 bg-accent-600 text-white text-sm font-semibold rounded-lg hover:bg-accent-700 active:bg-accent-800 transition-colors shadow-sm"
                             >
                                 {{ __('Book Now') }}
                             </button>

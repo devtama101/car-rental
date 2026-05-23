@@ -8,4 +8,14 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-accent-50: #fdf2ea;
+    --color-accent-100: #fce5d5;
+    --color-accent-200: #f9c3a3;
+    --color-accent-300: #f5a06e;
+    --color-accent-400: #f07a3b;
+    --color-accent-500: #e8520a;
+    --color-accent-600: #ba4208;
+    --color-accent-700: #8c3106;
+    --color-accent-800: #5d2104;
+    --color-accent-900: #2f1002;
 }

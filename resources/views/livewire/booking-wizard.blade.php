@@ -25,8 +25,8 @@
     </div>
 
     <div x-show="showSuccess" class="text-center py-12">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-100 mb-4">
+            <svg class="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
         </div>
@@ -41,7 +41,7 @@
             </button>
             <a
                 :href="redirectUrl"
-                class="px-6 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors inline-block"
+                class="px-6 py-2.5 bg-accent-600 text-white text-sm font-medium rounded-lg hover:bg-accent-700 transition-colors inline-block"
             >
                 {{ __('View My Bookings') }}
             </a>

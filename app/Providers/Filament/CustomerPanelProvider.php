@@ -29,7 +29,7 @@ class CustomerPanelProvider extends PanelProvider
             ->login()
             ->brandName(__('Car Rental'))
             ->colors([
-                'primary' => Color::Green,
+                'primary' => Color::hex('#E8520A'),
             ])
             ->discoverResources(in: app_path('Filament/Customer/Resources'), for: 'App\Filament\Customer\Resources')
             ->discoverPages(in: app_path('Filament/Customer/Pages'), for: 'App\Filament\Customer\Pages')

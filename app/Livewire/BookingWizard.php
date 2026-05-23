@@ -81,7 +81,7 @@ class BookingWizard extends Component implements HasSchemas
                                                     <div class='text-sm'>
                                                         <p class='font-semibold text-base'>{$vehicle->name}</p>
                                                         <p class='text-gray-500'>{$vehicle->year} &middot; ".__($vehicle->transmission)."</p>
-                                                        <p class='text-green-600 font-medium'>Rp {$rate} ".__('/day')."</p>
+                                                        <p class='text-accent-600 font-medium'>Rp {$rate} ".__('/day')."</p>
                                                         <p class='text-xs text-gray-400'>Rp {$rateBlock} ".__('/ 12h block').'</p>
                                                     </div>
                                                 </div>
@@ -193,7 +193,7 @@ class BookingWizard extends Component implements HasSchemas
                                             $html .= "
                                                     <div class='pt-2 border-t border-gray-200 flex justify-between font-bold'>
                                                         <span>".__('Total')."</span>
-                                                        <span class='text-green-700'>Rp {$totalFmt}</span>
+                                                        <span class='text-accent-700'>Rp {$totalFmt}</span>
                                                     </div>
                                                 </div>";
 
@@ -296,7 +296,7 @@ class BookingWizard extends Component implements HasSchemas
                                             $html .= "
                                                     <div class='flex justify-between font-bold text-lg pt-2 border-t'>
                                                         <span>".__('Total')."</span>
-                                                        <span class='text-green-700'>Rp {$totalFmt}</span>
+                                                        <span class='text-accent-700'>Rp {$totalFmt}</span>
                                                     </div>
                                                 </div>";
 

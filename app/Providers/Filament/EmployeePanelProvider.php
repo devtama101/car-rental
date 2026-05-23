@@ -30,7 +30,7 @@ class EmployeePanelProvider extends PanelProvider
             ->login()
             ->brandName(__('Car Rental'))
             ->colors([
-                'primary' => Color::Green,
+                'primary' => Color::hex('#E8520A'),
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         );
 
         FilamentColor::register([
-            'primary' => Color::Green,
+            'primary' => Color::hex('#E8520A'),
             'warning' => Color::Amber,
         ]);
     }
