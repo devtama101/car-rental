@@ -7,7 +7,6 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Storage;
 
 class RentalInfolist
 {
@@ -91,7 +90,7 @@ class RentalInfolist
                                             return null;
                                         }
 
-                                        return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                                        return route('file.view', ['path' => $state]);
                                     }, shouldOpenInNewTab: true)
                                     ->visible(fn ($record): bool => filled($record->proof_file_path)),
                             ])
@@ -107,7 +106,7 @@ class RentalInfolist
                                     return null;
                                 }
 
-                                return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                                return route('file.view', ['path' => $state]);
                             })
                             ->visible(fn ($record): bool => filled($record->user?->person?->id_file_path)),
                     ]),

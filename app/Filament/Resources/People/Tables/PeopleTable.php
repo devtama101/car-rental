@@ -8,7 +8,6 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
 
 class PeopleTable
 {
@@ -51,7 +50,7 @@ class PeopleTable
                             return null;
                         }
 
-                        return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                        return route('file.view', ['path' => $state]);
                     }, shouldOpenInNewTab: true)
                     ->toggleable(),
                 TextColumn::make('driver_fee_per_day')

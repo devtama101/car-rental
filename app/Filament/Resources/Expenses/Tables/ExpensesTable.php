@@ -12,7 +12,6 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
 
 class ExpensesTable
 {
@@ -76,7 +75,7 @@ class ExpensesTable
                             return null;
                         }
 
-                        return Storage::disk(config('filament.default_filesystem_disk'))->url($state);
+                        return route('file.view', ['path' => $state]);
                     }, shouldOpenInNewTab: true)
                     ->toggleable(),
 
