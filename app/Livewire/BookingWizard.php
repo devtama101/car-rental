@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -124,6 +125,19 @@ class BookingWizard extends Component implements HasSchemas
                                     'self-drive' => __('Self Drive'),
                                     'with-driver' => __('With Driver'),
                                 ])
+                                ->descriptions(function () {
+                                    $driver = Person::where('type', 'driver')->first();
+                                    $feeFmt = $driver
+                                        ? number_format($driver->driver_fee_per_day, 0, ',', '.')
+                                        : null;
+
+                                    return [
+                                        'self-drive' => __('You drive the vehicle yourself'),
+                                        'with-driver' => $feeFmt
+                                            ? __('Professional driver — estimated Rp :fee/day', ['fee' => $feeFmt])
+                                            : __('Professional driver included'),
+                                    ];
+                                })
                                 ->required()
                                 ->live(),
                             Select::make('driver_id')
@@ -147,6 +161,12 @@ class BookingWizard extends Component implements HasSchemas
                                     'pickup' => __('Pickup'),
                                     'delivery' => __('Delivery'),
                                 ])
+                                ->descriptions(function () {
+                                    return [
+                                        'pickup' => __('Pick up at our office (Jl. Merdeka No. 123, Jakarta)'),
+                                        'delivery' => __('We deliver the vehicle to your location'),
+                                    ];
+                                })
                                 ->required()
                                 ->live(),
                             Textarea::make('delivery_address')
@@ -159,6 +179,15 @@ class BookingWizard extends Component implements HasSchemas
                         ->icon('heroicon-o-user')
                         ->visible(fn () => ! Auth::check())
                         ->schema([
+                            Placeholder::make('login_prompt')
+                                ->hiddenLabel()
+                                ->content(new HtmlString(
+                                    '<div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">'
+                                    .__('Already have an account?')
+                                    .' <a href="/dashboard/login" class="text-accent-600 font-medium hover:underline">'
+                                    .__('Log in')
+                                    .'</a></div>'
+                                )),
                             TextInput::make('customer_name')
                                 ->label(__('Full Name'))
                                 ->required()
@@ -177,6 +206,12 @@ class BookingWizard extends Component implements HasSchemas
                                 ->required()
                                 ->minLength(8)
                                 ->placeholder(__('Min. 8 characters')),
+                            TextInput::make('customer_password_confirmation')
+                                ->label(__('Confirm Password'))
+                                ->password()
+                                ->required()
+                                ->same('customer_password')
+                                ->placeholder(__('Re-enter your password')),
                             TextInput::make('customer_phone')
                                 ->label(__('Phone Number'))
                                 ->tel()
@@ -513,6 +548,8 @@ class BookingWizard extends Component implements HasSchemas
                     'password' => Hash::make($data['customer_password']),
                 ]);
 
+                Auth::login($user);
+
                 $personData = [
                     'user_id' => $user->id,
                     'type' => 'customer',
@@ -530,7 +567,10 @@ class BookingWizard extends Component implements HasSchemas
 
             $vehicle = $this->getVehicle();
 
+            $bookingReference = 'BRK-'.strtoupper(Str::random(7));
+
             $rentalData = [
+                'booking_reference' => $bookingReference,
                 'user_id' => $user->id,
                 'vehicle_id' => $vehicle->id,
                 'start_date' => $this->startDateTime,
@@ -564,7 +604,7 @@ class BookingWizard extends Component implements HasSchemas
 
             DB::commit();
 
-            $this->dispatch('booking-completed', redirectUrl: Auth::check() ? '/dashboard' : '/dashboard/login');
+            $this->dispatch('booking-completed', redirectUrl: '/dashboard', bookingReference: $bookingReference);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

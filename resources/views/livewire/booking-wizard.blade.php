@@ -1,10 +1,12 @@
 <div class="max-w-6xl mx-auto" x-data="{
     showSuccess: false,
     redirectUrl: '/',
+    bookingReference: '',
     init() {
         Livewire.on('booking-completed', (event) => {
             this.showSuccess = true;
             this.redirectUrl = event.redirectUrl || '/';
+            this.bookingReference = event.bookingReference || '';
         });
     }
 }">
@@ -32,6 +34,10 @@
         </div>
         <h2 class="text-2xl font-bold text-gray-900">{{ __('Booking Confirmed!') }}</h2>
         <p class="mt-2 text-gray-600">{{ __('Your booking has been submitted successfully.') }}</p>
+        <div x-show="bookingReference" class="mt-4 p-4 bg-gray-50 rounded-lg inline-block">
+            <p class="text-sm text-gray-500">{{ __('Booking Reference') }}</p>
+            <a :href="`/booking/${bookingReference}/receipt`" target="_blank" class="text-xl font-bold text-accent-600 hover:text-accent-700 underline" x-text="bookingReference"></a>
+        </div>
         <div class="mt-6 flex justify-center gap-3">
             <button
                 wire:click="$dispatch('back-to-listing')"

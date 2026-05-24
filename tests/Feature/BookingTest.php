@@ -40,12 +40,14 @@ test('booking wizard validates customer details on submit', function () {
         ->set('data.customer_name', '')
         ->set('data.customer_email', '')
         ->set('data.customer_password', '')
+        ->set('data.customer_password_confirmation', '')
         ->set('data.payment_method', '')
         ->call('submit')
         ->assertHasErrors([
             'data.customer_name',
             'data.customer_email',
             'data.customer_password',
+            'data.customer_password_confirmation',
             'data.payment_method',
         ]);
 });
@@ -96,12 +98,16 @@ test('booking wizard completes full booking flow', function () {
         ->set('data.customer_name', 'John Doe')
         ->set('data.customer_email', 'john@example.com')
         ->set('data.customer_password', 'Password1')
+        ->set('data.customer_password_confirmation', 'Password1')
         ->set('data.customer_phone', '08123456789')
         ->set('data.customer_address', 'Jl. Merdeka No. 1')
         ->set('data.customer_id_type', 'ktp')
         ->set('data.payment_method', 'cash')
         ->call('submit')
         ->assertDispatched('booking-completed');
+
+    expect(auth()->check())->toBeTrue();
+    expect(auth()->user()->email)->toBe('john@example.com');
 });
 
 test('booking creates all related records', function () {
@@ -115,6 +121,7 @@ test('booking creates all related records', function () {
         ->set('data.customer_name', 'Jane Doe')
         ->set('data.customer_email', 'jane@example.com')
         ->set('data.customer_password', 'Secret123')
+        ->set('data.customer_password_confirmation', 'Secret123')
         ->set('data.customer_phone', '087654321')
         ->set('data.customer_address', 'Jl. Sudirman No. 10')
         ->set('data.customer_id_type', 'sim')

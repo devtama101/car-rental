@@ -49,6 +49,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Admin User', 'email' => 'admin@example.com', 'type' => PersonType::Admin],
             ['name' => 'Employee User', 'email' => 'employee@example.com', 'type' => PersonType::Employee],
             ['name' => 'Customer User', 'email' => 'customer@example.com', 'type' => PersonType::Customer],
+            ['name' => 'Driver User', 'email' => 'driver@example.com', 'type' => PersonType::Driver],
         ];
 
         foreach ($defaultUsers as $data) {
@@ -66,6 +67,12 @@ class DatabaseSeeder extends Seeder
                 ['type' => $data['type']->value],
             );
         }
+
+        $driverUser = User::where('email', 'driver@example.com')->first();
+        Person::updateOrCreate(
+            ['user_id' => $driverUser->id],
+            ['type' => PersonType::Driver->value, 'phone' => '081111111111', 'driver_fee_per_day' => 150_000],
+        );
 
         $superAdmin = User::where('email', 'superadmin@example.com')->first();
         $customer = User::where('email', 'customer@example.com')->first();

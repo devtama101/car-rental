@@ -13,29 +13,84 @@
         @filamentStyles
         <link href="{{ asset('css/filament/filament/app.css') }}" rel="stylesheet">
         @livewireStyles
+        <style>[x-cloak] { display: none; }</style>
     </head>
-    <body class="bg-gray-50 text-gray-900 min-h-screen antialiased">
-        <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-                <a href="/" class="text-xl font-bold text-accent-700">{{ __('CarRental') }}</a>
-                <nav class="flex items-center gap-4 text-sm">
-                    <div class="flex items-center gap-1 text-xs border-r border-gray-200 pr-4 mr-1">
-                        <a href="{{ route('language', 'en') }}" class="{{ app()->getLocale() === 'en' ? 'font-bold text-accent-700' : 'text-gray-400 hover:text-gray-600' }} no-underline">EN</a>
-                        <span class="text-gray-300">|</span>
-                        <a href="{{ route('language', 'id') }}" class="{{ app()->getLocale() === 'id' ? 'font-bold text-accent-700' : 'text-gray-400 hover:text-gray-600' }} no-underline">ID</a>
+    <body
+        x-data="{ scrolled: false, isHome: {{ request()->is('/') ? 'true' : 'false' }} }"
+        x-on:scroll.window="scrolled = window.scrollY > 100"
+        class="bg-gray-50 text-gray-900 min-h-screen antialiased"
+    >
+        <header
+            :class="scrolled || !isHome ? 'bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm' : 'bg-transparent'"
+            class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        >
+            <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+                <a href="/"
+                    :class="scrolled || !isHome ? 'text-accent-700' : 'text-white'"
+                    class="text-xl font-bold shrink-0 transition-colors duration-300"
+                >{{ __('CarRental') }}</a>
+
+                {{-- Nav links (desktop only) --}}
+                <div class="hidden md:flex items-center gap-6 text-sm font-medium"
+                    :class="scrolled || !isHome ? 'text-gray-600' : 'text-white/80'"
+                >
+                    <a href="#how-it-works" class="hover:opacity-80 transition-opacity">{{ __('Cara Pesan') }}</a>
+                    <a href="#testimonials" class="hover:opacity-80 transition-opacity">{{ __('Testimoni') }}</a>
+                    <a href="{{ route('cars.index') }}" class="hover:opacity-80 transition-opacity">{{ __('Pesan Mobil') }}</a>
+                </div>
+
+                {{-- Right side: language + auth --}}
+                <div class="flex items-center gap-4 text-sm shrink-0">
+                    <div
+                        :class="scrolled || !isHome ? 'border-gray-200' : 'border-white/20'"
+                        class="hidden sm:flex items-center gap-1 text-xs border-r pr-4 mr-1 transition-colors duration-300"
+                    >
+                        <a href="{{ route('language', 'en') }}"
+                            :class="'{{ app()->getLocale() }}' === 'en'
+                                ? 'font-bold ' + (scrolled || !isHome ? 'text-accent-700' : 'text-white')
+                                : (scrolled || !isHome ? 'text-gray-400 hover:text-gray-600' : 'text-white/60 hover:text-white')"
+                            class="no-underline transition-colors duration-300"
+                        >EN</a>
+                        <span
+                            :class="scrolled || !isHome ? 'text-gray-300' : 'text-white/30'"
+                            class="transition-colors duration-300"
+                        >|</span>
+                        <a href="{{ route('language', 'id') }}"
+                            :class="'{{ app()->getLocale() }}' === 'id'
+                                ? 'font-bold ' + (scrolled || !isHome ? 'text-accent-700' : 'text-white')
+                                : (scrolled || !isHome ? 'text-gray-400 hover:text-gray-600' : 'text-white/60 hover:text-white')"
+                            class="no-underline transition-colors duration-300"
+                        >ID</a>
                     </div>
                     @auth
                         @if(auth()->user()->isCustomer() || auth()->user()->isEmployee())
-                            <a href="{{ url(auth()->user()->isCustomer() ? '/dashboard' : '/employee') }}" class="text-gray-600 hover:text-gray-900">{{ __('Dashboard') }}</a>
+                            <a href="{{ url(auth()->user()->isCustomer() ? '/dashboard' : '/employee') }}"
+                                :class="scrolled || !isHome ? 'text-gray-600 hover:text-gray-900' : 'text-white/80 hover:text-white'"
+                                class="transition-colors duration-300"
+                            >{{ __('Dashboard') }}</a>
                         @else
-                            <a href="{{ url('/admin') }}" class="text-gray-600 hover:text-gray-900">{{ __('Admin Panel') }}</a>
+                            <a href="{{ url('/admin') }}"
+                                :class="scrolled || !isHome ? 'text-gray-600 hover:text-gray-900' : 'text-white/80 hover:text-white'"
+                                class="transition-colors duration-300"
+                            >{{ __('Admin Panel') }}</a>
                         @endif
                     @else
-                        <a href="{{ url('/dashboard/login') }}" class="text-gray-600 hover:text-gray-900">{{ __('Log in') }}</a>
+                        <a href="{{ url('/dashboard/login') }}"
+                            :class="scrolled || !isHome ? 'text-gray-600 hover:text-gray-900' : 'text-white/80 hover:text-white'"
+                            class="transition-colors duration-300"
+                        >{{ __('Log in') }}</a>
                     @endauth
-                </nav>
+                </div>
             </div>
         </header>
+
+        {{-- Spacer for fixed header --}}
+        @if (request()->is('/'))
+            <div x-show="scrolled" x-cloak class="h-14"></div>
+        @else
+            <div class="h-14"></div>
+        @endif
+
         <main>
             {{ $slot }}
         </main>

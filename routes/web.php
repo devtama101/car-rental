@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BookingReceiptController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,6 +21,10 @@ Route::get('/language/{locale}', function (string $locale) {
 
     return redirect()->back();
 })->name('language');
+
+Route::get('/booking/{reference}/receipt', BookingReceiptController::class)
+    ->where('reference', 'BRK-[A-Z0-9]+')
+    ->name('booking.receipt');
 
 Route::get('/file/{path}', function (string $path) {
     $path = ltrim($path, '/');

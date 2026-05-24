@@ -1,8 +1,8 @@
 <x-layouts.app>
     {{-- Hero + Availability Filter --}}
     <section class="relative bg-gray-900 overflow-hidden">
-        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1529369623266-f5264b696110?q=80&w=2148&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
+        <img class="absolute inset-0 w-full h-full object-cover object-center" src="https://images.unsplash.com/photo-1529369623266-f5264b696110?q=80&w=2148&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="" aria-hidden="true">
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/85"></div>
         <div class="relative max-w-7xl mx-auto px-4 py-28 md:py-36 text-center">
             <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white">
                 {{ __('CarRental') }}

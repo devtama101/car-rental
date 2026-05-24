@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Rental>
@@ -18,6 +19,7 @@ class RentalFactory extends Factory
         $startDate = Carbon::now()->addDays($this->faker->numberBetween(1, 14));
 
         return [
+            'booking_reference' => 'BRK-'.strtoupper(Str::random(7)),
             'user_id' => User::factory(),
             'vehicle_id' => Vehicle::factory(),
             'start_date' => $startDate,
