@@ -30,18 +30,24 @@
     }
 
     & .fi-sc-wizard-header-step-text {
-        max-width: 6rem;
+        min-width: 0;
+        max-width: 5rem;
 
         & .fi-sc-wizard-header-step-label {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            min-width: 0;
         }
     }
 
     & .fi-sc-wizard-header-step-icon-ctn {
-        width: 2rem;
-        height: 2rem;
+        width: 1.75rem;
+        height: 1.75rem;
+    }
+
+    & .fi-sc-wizard-header-step-separator {
+        width: 1rem;
     }
 }
 
@@ -53,12 +59,16 @@
         }
 
         & .fi-sc-wizard-header-step-text {
-            max-width: 10rem;
+            max-width: 9rem;
         }
 
         & .fi-sc-wizard-header-step-icon-ctn {
-            width: 2.5rem;
-            height: 2.5rem;
+            width: 2.25rem;
+            height: 2.25rem;
+        }
+
+        & .fi-sc-wizard-header-step-separator {
+            width: 1.25rem;
         }
     }
 }
