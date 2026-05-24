@@ -2,36 +2,109 @@
     @if ($selectedVehicleId)
         <livewire:booking-wizard :vehicleId="$selectedVehicleId" :key="$selectedVehicleId" />
     @else
-        <div id="booking" class="flex gap-4 mb-8 justify-center">
-            <div>
-                <label for="start_date" class="block text-sm font-medium text-gray-700">{{ __('Start Date & Time') }}</label>
-                <input
-                    type="datetime-local"
-                    id="start_date"
-                    wire:model.live="startDate"
-                    class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-accent-500 focus:ring-accent-500"
-                >
-            </div>
-            <div>
-                <label for="end_date" class="block text-sm font-medium text-gray-700">{{ __('End Date & Time') }}</label>
-                <input
-                    type="datetime-local"
-                    id="end_date"
-                    wire:model.live="endDate"
-                    class="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-accent-500 focus:ring-accent-500"
-                >
-            </div>
-            @if ($startDate && $endDate)
-                <div class="flex items-end">
-                    <button
-                        wire:click="$set('startDate', null); $set('endDate', null)"
-                        class="py-2 px-4 text-sm text-gray-600 hover:text-gray-900"
-                    >
-                        {{ __('Clear') }}
-                    </button>
+        {{-- Filter bar --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    <h3 class="text-sm font-semibold text-gray-900">{{ __('Filters') }}</h3>
                 </div>
+                <button
+                    wire:click="resetFilters"
+                    class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-accent-600 transition-colors"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    {{ __('Reset') }}
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {{-- Start Date --}}
+                <div>
+                    <label for="listing-start-date" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Start Date & Time') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <input
+                            type="datetime-local"
+                            id="listing-start-date"
+                            wire:model.live="startDate"
+                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-4 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors"
+                        >
+                    </div>
+                </div>
+
+                {{-- End Date --}}
+                <div>
+                    <label for="listing-end-date" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('End Date & Time') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <input
+                            type="datetime-local"
+                            id="listing-end-date"
+                            wire:model.live="endDate"
+                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-4 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors"
+                        >
+                    </div>
+                </div>
+
+                {{-- Transmission --}}
+                <div>
+                    <label for="listing-transmission" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Transmission') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <select
+                            id="listing-transmission"
+                            wire:model.live="transmission"
+                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
+                        >
+                            <option value="">{{ __('All Types') }}</option>
+                            <option value="automatic">{{ __('Automatic') }}</option>
+                            <option value="manual">{{ __('Manual') }}</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Results count --}}
+        <div class="flex items-center justify-between mb-6">
+            <p class="text-sm text-gray-500">
+                {{ __('Showing') }} <span class="font-semibold text-gray-900">{{ $vehicles->total() }}</span> {{ __('available vehicles') }}
+            </p>
+            @if($transmission)
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-50 text-accent-700 border border-accent-200">
+                    {{ __($transmission) }}
+                    <button wire:click="$set('transmission', '')" class="hover:text-accent-900 transition-colors">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </span>
             @endif
         </div>
+
+        {{-- Vehicle grid --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @forelse ($vehicles as $vehicle)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg hover:border-accent-200 transition-all duration-200">
@@ -64,7 +137,9 @@
                         <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                             <div>
                                 <span class="text-accent-600 font-bold text-lg">Rp {{ number_format($vehicle->rental_rate_per_day ?? 0, 0, ',', '.') }}</span>
-                                <span class="text-xs text-gray-400"> {{ __('\/day') }}</span>
+                                <span class="text-xs text-gray-400">/{{ __('day') }}</span>
+                                <br>
+                                <span class="text-xs text-gray-400">Rp {{ number_format((int) ceil(($vehicle->rental_rate_per_day ?? 0) / 2), 0, ',', '.') }}/12h</span>
                             </div>
                             <button
                                 wire:click="selectVehicle({{ $vehicle->id }})"
@@ -81,7 +156,16 @@
                         <path d="M5 11l1.5-4.5h11l1.5 4.5M5 11h14M5 11l-1.15 3.45M19 11l1.15 3.45M5 14.45V17a2 2 0 002 2h10a2 2 0 002-2v-2.55M8 14h.01M16 14h.01M3 11l1.15-3.45A2 2 0 016.07 6h11.86a2 2 0 011.92 1.55L21 11M3 11h18"/>
                     </svg>
                     <p class="text-lg font-medium">{{ __('No vehicles available') }}</p>
-                    <p class="text-sm mt-1">{{ __('Try adjusting your date range.') }}</p>
+                    <p class="text-sm mt-1">{{ __('Try adjusting your date range or filters.') }}</p>
+                    <button
+                        wire:click="resetFilters"
+                        class="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-accent-600 bg-accent-50 rounded-lg hover:bg-accent-100 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        {{ __('Back to Home') }}
+                    </button>
                 </div>
             @endforelse
         </div>

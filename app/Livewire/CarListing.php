@@ -7,6 +7,7 @@ use App\Models\Rental;
 use App\Models\Vehicle;
 use Carbon\Carbon;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,16 +15,26 @@ class CarListing extends Component
 {
     use WithPagination;
 
+    #[Url]
     public ?string $startDate = null;
 
+    #[Url]
     public ?string $endDate = null;
+
+    #[Url]
+    public ?string $transmission = null;
 
     public ?int $selectedVehicleId = null;
 
     public function mount(): void
     {
-        $this->startDate = Carbon::now()->format('Y-m-d\TH:i');
-        $this->endDate = Carbon::now()->addHours(24)->format('Y-m-d\TH:i');
+        if (! $this->startDate) {
+            $this->startDate = Carbon::now()->format('Y-m-d\TH:i');
+        }
+
+        if (! $this->endDate) {
+            $this->endDate = Carbon::now()->addHours(24)->format('Y-m-d\TH:i');
+        }
     }
 
     public function updatedEndDate(): void
@@ -44,8 +55,19 @@ class CarListing extends Component
         $this->selectedVehicleId = null;
     }
 
+    public function resetFilters(): void
+    {
+        $this->redirect(route('home'));
+    }
+
     public function getAvailableVehiclesProperty()
     {
+        $query = Vehicle::query()->orderBy('name');
+
+        if ($this->transmission) {
+            $query->where('transmission', $this->transmission);
+        }
+
         if ($this->startDate && $this->endDate) {
             $unavailableIds = Rental::query()
                 ->whereIn('status', [
@@ -62,13 +84,10 @@ class CarListing extends Component
                 })
                 ->pluck('vehicle_id');
 
-            return Vehicle::query()
-                ->whereNotIn('id', $unavailableIds)
-                ->orderBy('name')
-                ->paginate(12);
+            $query->whereNotIn('id', $unavailableIds);
         }
 
-        return Vehicle::query()->orderBy('name')->paginate(12);
+        return $query->paginate(12);
     }
 
     public function render()

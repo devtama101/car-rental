@@ -1,7 +1,8 @@
 <x-layouts.app>
-    {{-- Hero --}}
+    {{-- Hero + Availability Filter --}}
     <section class="relative bg-white overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-br from-accent-50/60 via-white to-accent-100/30"></div>
+        <div class="absolute inset-0 opacity-[0.15]" style="background-image: radial-gradient(circle, #e8520a 1.5px, transparent 1.5px); background-size: 12px 12px;"></div>
         <div class="relative max-w-7xl mx-auto px-4 py-28 md:py-36 text-center">
             <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-accent-700">
                 {{ __('CarRental') }}
@@ -14,11 +15,14 @@
                     class="px-7 py-3.5 border-2 border-accent-600 text-accent-600 rounded-xl font-semibold hover:bg-accent-600 hover:text-white transition duration-200">
                     {{ __('Cara Pesan') }}
                 </a>
-                <a href="#booking"
+                <a href="{{ route('cars.index') }}"
                     class="px-7 py-3.5 bg-accent-600 text-white rounded-xl font-semibold hover:bg-accent-700 transition duration-200 shadow-lg shadow-accent-200">
                     {{ __('Pesan Sekarang') }}
                 </a>
             </div>
+        </div>
+        <div id="booking" class="relative max-w-7xl mx-auto px-4 pt-6 pb-24">
+            <livewire:availability-filter />
         </div>
     </section>
 
@@ -46,6 +50,44 @@
                         </div>
                         <h3 class="font-semibold text-gray-900 mb-2">{{ $step['title'] }}</h3>
                         <p class="text-sm text-gray-500 leading-relaxed">{{ $step['desc'] }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- Why Choose Us --}}
+    <section id="why-us" class="bg-gray-50 border-t border-gray-100 py-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-14">
+                <h2 class="text-3xl font-bold text-gray-900">{{ __('Mengapa Memilih Kami?') }}</h2>
+                <div class="w-14 h-1 bg-accent-500 mx-auto mt-4 rounded-full"></div>
+                <p class="mt-4 text-gray-500 max-w-md mx-auto">{{ __('Kami berkomitmen memberikan pengalaman sewa mobil terbaik untuk Anda.') }}</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                @php
+                    $benefits = [
+                        ['icon' => 'currency', 'title' => __('Harga Bersahabat'), 'desc' => __('Tarif kompetitif dengan perhitungan transparan. Bayar hanya untuk yang Anda butuhkan.')],
+                        ['icon' => 'car', 'title' => __('Armada Terawat'), 'desc' => __('Setiap mobil dijaga dan diperiksa secara berkala untuk kenyamanan dan keselamatan Anda.')],
+                        ['icon' => 'clock', 'title' => __('Proses Mudah'), 'desc' => __('Booking online hanya dalam beberapa langkah. Tanpa ribet, tanpa antri.')],
+                        ['icon' => 'support', 'title' => __('Dukungan 24/7'), 'desc' => __('Tim kami siap membantu kapan saja. Hubungi kami via WhatsApp untuk bantuan cepat.')],
+                    ];
+                @endphp
+                @foreach ($benefits as $b)
+                    <div class="bg-white rounded-2xl p-7 border border-gray-100 hover:shadow-lg transition-shadow text-center">
+                        <div class="w-14 h-14 bg-accent-100 text-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                            @if ($b['icon'] === 'currency')
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1A2 2 0 0012 4a2 2 0 00-2.599 1A2 2 0 0112 8zm0 8v4m0-4v-4m6 4c0 3.314-2.686 6-6 6s-6-2.686-6-6 2.686-6 6-6 6 2.686 6 6z"/></svg>
+                            @elseif($b['icon'] === 'car')
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11l1.5-4.5h11l1.5 4.5M5 11h14M5 11l-1.15 3.45M19 11l1.15 3.45M5 14.45V17a2 2 0 002 2h10a2 2 0 002-2v-2.55M8 14h.01M16 14h.01M3 11l1.15-3.45A2 2 0 016.07 6h11.86a2 2 0 011.92 1.55L21 11M3 11h18"/></svg>
+                            @elseif($b['icon'] === 'clock')
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            @else
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                            @endif
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-2">{{ $b['title'] }}</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">{{ $b['desc'] }}</p>
                     </div>
                 @endforeach
             </div>
@@ -108,9 +150,6 @@
         </div>
     </section>
 
-    {{-- Car Listing --}}
-    <livewire:car-listing />
-
     {{-- Footer --}}
     <footer class="bg-gray-900 text-gray-300 pt-16 pb-8">
         <div class="max-w-7xl mx-auto px-4">
@@ -127,7 +166,7 @@
                     <ul class="space-y-2.5 text-sm">
                         <li><a href="#how-it-works" class="text-gray-400 hover:text-white transition">{{ __('Cara Pesan') }}</a></li>
                         <li><a href="#testimonials" class="text-gray-400 hover:text-white transition">{{ __('Testimoni') }}</a></li>
-                        <li><a href="#booking" class="text-gray-400 hover:text-white transition">{{ __('Pesan Mobil') }}</a></li>
+                        <li><a href="{{ route('cars.index') }}" class="text-gray-400 hover:text-white transition">{{ __('Pesan Mobil') }}</a></li>
                         <li><a href="{{ url('/dashboard/login') }}" class="text-gray-400 hover:text-white transition">{{ __('Masuk') }}</a></li>
                     </ul>
                 </div>

@@ -64,7 +64,7 @@ class BookingWizard extends Component implements HasSchemas
         return $schema
             ->components([
                 Wizard::make([
-                    Step::make(__('Rental Details'))
+                    Step::make(__('Date & Duration'))
                         ->icon('heroicon-o-calendar-days')
                         ->schema([
                             Section::make(__('Vehicle'))
@@ -114,6 +114,10 @@ class BookingWizard extends Component implements HasSchemas
                                 ->visible(fn (Get $get): bool => ! $get('is_half_day'))
                                 ->required()
                                 ->live(),
+                        ]),
+                    Step::make(__('Vehicle Options'))
+                        ->icon('heroicon-o-truck')
+                        ->schema([
                             Radio::make('driver_option')
                                 ->label(__('Driver Option'))
                                 ->options([
@@ -150,58 +154,8 @@ class BookingWizard extends Component implements HasSchemas
                                 ->placeholder(__('Enter your delivery address'))
                                 ->visible(fn (Get $get): bool => $get('delivery_method') === 'delivery')
                                 ->required(fn (Get $get): bool => $get('delivery_method') === 'delivery'),
-                            Section::make(__('Pricing Summary'))
-                                ->schema([
-                                    Placeholder::make('pricing_calculation')
-                                        ->hiddenLabel()
-                                        ->content(function () {
-                                            if (! $this->startDateTime) {
-                                                return new HtmlString('<p class="text-sm text-gray-400">'.__('Fill in the pickup date to see pricing.').'</p>');
-                                            }
-
-                                            $subtotalFmt = number_format($this->subtotal, 0, ',', '.');
-                                            $driverFeeFmt = number_format($this->driverFee, 0, ',', '.');
-                                            $totalFmt = number_format($this->totalAmount, 0, ',', '.');
-
-                                            $html = "
-                                                <div class='space-y-2 text-sm'>
-                                                    <div>
-                                                        <span class='text-gray-500'>".__('Pickup:')."</span>
-                                                        <span class='font-medium'>{$this->startDateTime->format('d M Y, H:i')}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span class='text-gray-500'>".__('Return:')."</span>
-                                                        <span class='font-medium'>{$this->endDateTime->format('d M Y, H:i')}</span>
-                                                    </div>
-                                                    <div class='pt-2 border-t border-gray-200'>
-                                                        <span>".__('Car')."</span>
-                                                        <span class='mx-1'>{$this->totalBlocks} ".__('blk')." &times; Rp {$subtotalFmt}</span>
-                                                        <span class='mx-2'>=</span>
-                                                        <span>Rp {$subtotalFmt}</span>
-                                                    </div>";
-
-                                            if ($this->driverFee > 0) {
-                                                $html .= '
-                                                    <div>
-                                                        <span>'.__('Driver')."</span>
-                                                        <span class='mx-1'>{$this->totalBlocks} ".__('blk')."</span>
-                                                        <span class='mx-2'>=</span>
-                                                        <span>Rp {$driverFeeFmt}</span>
-                                                    </div>";
-                                            }
-
-                                            $html .= "
-                                                    <div class='pt-2 border-t border-gray-200 flex justify-between font-bold'>
-                                                        <span>".__('Total')."</span>
-                                                        <span class='text-accent-700'>Rp {$totalFmt}</span>
-                                                    </div>
-                                                </div>";
-
-                                            return new HtmlString($html);
-                                        }),
-                                ]),
                         ]),
-                    Step::make(__('Customer Details'))
+                    Step::make(__('Your Info'))
                         ->icon('heroicon-o-user')
                         ->visible(fn () => ! Auth::check())
                         ->schema([
@@ -229,6 +183,12 @@ class BookingWizard extends Component implements HasSchemas
                                 ->required()
                                 ->maxLength(20)
                                 ->placeholder(__('08xxxxxxxxxx')),
+                        ])
+                        ->columns(2),
+                    Step::make(__('Identity & Address'))
+                        ->icon('heroicon-o-identification')
+                        ->visible(fn () => ! Auth::check())
+                        ->schema([
                             Textarea::make('customer_address')
                                 ->label(__('Address'))
                                 ->required()
@@ -251,9 +211,8 @@ class BookingWizard extends Component implements HasSchemas
                                 ->directory('id-documents')
                                 ->hint(__('JPG, PNG, or PDF. Max 2MB.'))
                                 ->nullable(),
-                        ])
-                        ->columns(2),
-                    Step::make(__('Payment'))
+                        ]),
+                    Step::make(__('Review & Payment'))
                         ->icon('heroicon-o-credit-card')
                         ->schema([
                             Section::make(__('Booking Summary'))
@@ -265,13 +224,39 @@ class BookingWizard extends Component implements HasSchemas
                                                 return new HtmlString('<p class="text-sm text-gray-400">'.__('No booking details available.').'</p>');
                                             }
 
+                                            $vehicle = $this->getVehicle();
                                             $subtotalFmt = number_format($this->subtotal, 0, ',', '.');
                                             $driverFeeFmt = number_format($this->driverFee, 0, ',', '.');
                                             $totalFmt = number_format($this->totalAmount, 0, ',', '.');
 
-                                            $html = "
+                                            $driverLine = '';
+                                            if ($this->driverFee > 0) {
+                                                $driverName = $this->driverOption === 'with-driver' && $this->driverId
+                                                    ? Person::find($this->driverId)?->user?->name ?? __('With Driver')
+                                                    : __('Self Drive');
+                                                $driverLine = "
+                                                    <div class='flex justify-between'>
+                                                        <span class='text-gray-600'>".__('Driver')."</span>
+                                                        <span>{$driverName}</span>
+                                                    </div>
+                                                    <div class='flex justify-between'>
+                                                        <span class='text-gray-600'>".__('Driver fee')."</span>
+                                                        <span>Rp {$driverFeeFmt}</span>
+                                                    </div>";
+                                            }
+
+                                            $deliveryLine = '';
+                                            if (($this->data['delivery_method'] ?? '') === 'delivery') {
+                                                $deliveryLine = "
+                                                    <div class='flex justify-between'>
+                                                        <span class='text-gray-600'>".__('Delivery').'</span>
+                                                        <span>'.__('Yes').'</span>
+                                                    </div>';
+                                            }
+
+                                            return new HtmlString("
                                                 <div class='space-y-2 text-sm'>
-                                                    <h3 class='font-semibold text-gray-900'>{$this->vehicle->name}</h3>
+                                                    <h3 class='font-semibold text-gray-900'>{$vehicle->name}</h3>
                                                     <div class='flex justify-between'>
                                                         <span class='text-gray-600'>".__('Pickup:')."</span>
                                                         <span>{$this->startDateTime->format('d M Y, H:i')}</span>
@@ -281,26 +266,17 @@ class BookingWizard extends Component implements HasSchemas
                                                         <span>{$this->endDateTime->format('d M Y, H:i')}</span>
                                                     </div>
                                                     <div class='flex justify-between'>
-                                                        <span class='text-gray-600'>{$this->vehicle->name} &times; {$this->totalBlocks} ".__('block(s)')."</span>
+                                                        <span class='text-gray-600'>{$vehicle->name} &times; {$this->totalBlocks} ".__('block(s)')."</span>
                                                         <span>Rp {$subtotalFmt}</span>
-                                                    </div>";
-
-                                            if ($this->driverFee > 0) {
-                                                $html .= "
-                                                    <div class='flex justify-between'>
-                                                        <span class='text-gray-600'>".__('Driver fee')."</span>
-                                                        <span>Rp {$driverFeeFmt}</span>
-                                                    </div>";
-                                            }
-
-                                            $html .= "
+                                                    </div>
+                                                    {$driverLine}
+                                                    {$deliveryLine}
                                                     <div class='flex justify-between font-bold text-lg pt-2 border-t'>
                                                         <span>".__('Total')."</span>
                                                         <span class='text-accent-700'>Rp {$totalFmt}</span>
                                                     </div>
-                                                </div>";
-
-                                            return new HtmlString($html);
+                                                </div>
+                                            ");
                                         }),
                                 ]),
                             Radio::make('payment_method')

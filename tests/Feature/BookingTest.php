@@ -17,7 +17,7 @@ test('booking wizard renders for a vehicle', function () {
     Livewire::test(BookingWizard::class, ['vehicleId' => $vehicle->id])
         ->assertOk()
         ->assertSee($vehicle->name)
-        ->assertSee('Rental Details');
+        ->assertSee('Date & Duration');
 });
 
 test('booking wizard validates rental details on incomplete submit', function () {

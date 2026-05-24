@@ -5,7 +5,11 @@ use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
+
+Route::get('/cars', function () {
+    return view('cars');
+})->name('cars.index');
 
 Route::get('/language/{locale}', function (string $locale) {
     if (! in_array($locale, ['en', 'id'])) {
