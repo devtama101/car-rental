@@ -1,22 +1,22 @@
 <x-layouts.app>
     {{-- Hero + Availability Filter --}}
-    <section class="relative bg-white overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-accent-50/60 via-white to-accent-100/30"></div>
-        <div class="absolute inset-0 opacity-[0.15]" style="background-image: radial-gradient(circle, #e8520a 1.5px, transparent 1.5px); background-size: 12px 12px;"></div>
+    <section class="relative bg-gray-900 overflow-hidden">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1529369623266-f5264b696110?q=80&w=2148&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
         <div class="relative max-w-7xl mx-auto px-4 py-28 md:py-36 text-center">
-            <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-accent-700">
+            <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white">
                 {{ __('CarRental') }}
             </h1>
-            <p class="mt-5 text-lg md:text-xl text-gray-600 max-w-xl mx-auto leading-relaxed">
+            <p class="mt-5 text-lg md:text-xl text-gray-200 max-w-xl mx-auto leading-relaxed">
                 {{ __('Sewa Mobil Mudah, Aman, Terpercaya') }}
             </p>
             <div class="mt-9 flex justify-center gap-4 flex-wrap">
                 <a href="#how-it-works"
-                    class="px-7 py-3.5 border-2 border-accent-600 text-accent-600 rounded-xl font-semibold hover:bg-accent-600 hover:text-white transition duration-200">
+                    class="px-7 py-3.5 border-2 border-white/80 text-white rounded-xl font-semibold hover:bg-white hover:text-gray-900 transition duration-200">
                     {{ __('Cara Pesan') }}
                 </a>
                 <a href="{{ route('cars.index') }}"
-                    class="px-7 py-3.5 bg-accent-600 text-white rounded-xl font-semibold hover:bg-accent-700 transition duration-200 shadow-lg shadow-accent-200">
+                    class="px-7 py-3.5 bg-accent-600 text-white rounded-xl font-semibold hover:bg-accent-500 transition duration-200 shadow-lg shadow-black/20">
                     {{ __('Pesan Sekarang') }}
                 </a>
             </div>
