@@ -309,7 +309,7 @@ class BookingWizard extends Component implements HasSchemas
                     ->nextAction(fn (Action $action) => $action->label(__('Next'))->color('primary'))
                     ->previousAction(fn (Action $action) => $action->label(__('Back'))->color('gray'))
                     ->submitAction(new HtmlString(
-                        '<button type="button" wire:click="submit" class="fi-btn fi-color fi-color-success fi-size-md">'.__('Submit Booking').'</button>'
+                        '<button type="button" wire:click="submit" class="fi-color fi-color-primary fi-bg-color-400 hover:fi-bg-color-300 dark:fi-bg-color-600 dark:hover:fi-bg-color-700 fi-text-color-950 hover:fi-text-color-800 dark:fi-text-color-0 dark:hover:fi-text-color-0 fi-btn fi-size-md fi-ac-btn-action">'.__('Submit Booking').'</button>'
                     )),
             ])
             ->statePath('data');

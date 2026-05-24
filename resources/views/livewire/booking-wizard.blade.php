@@ -1,4 +1,4 @@
-<div class="max-w-2xl mx-auto" x-data="{
+<div class="max-w-6xl mx-auto" x-data="{
     showSuccess: false,
     redirectUrl: '/',
     init() {
