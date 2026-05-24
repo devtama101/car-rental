@@ -23,11 +23,11 @@ class DashboardStatsWidget extends BaseWidget
             ->count();
 
         $pendingPaymentCount = Payment::whereIn('rental_id', $rentalIds)
-            ->where('status', 'pending')
+            ->whereNull('proof_file_path')
             ->count();
 
         $unpaidCount = auth()->user()->rentals()
-            ->whereDoesntHave('payments', fn ($q) => $q->where('status', 'paid'))
+            ->whereDoesntHave('payments', fn ($q) => $q->whereNotNull('proof_file_path'))
             ->count();
 
         return [
