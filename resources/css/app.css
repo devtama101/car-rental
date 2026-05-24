@@ -19,3 +19,51 @@
     --color-accent-800: #5d2104;
     --color-accent-900: #2f1002;
 }
+
+/* ───────── Booking Wizard overrides ───────── */
+
+/* Stepper header: compact layout so 5 steps fit without scroll */
+.fi-sc-wizard-header {
+    & .fi-sc-wizard-header-step-btn {
+        padding-inline: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    & .fi-sc-wizard-header-step-text {
+        max-width: 6rem;
+
+        & .fi-sc-wizard-header-step-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    & .fi-sc-wizard-header-step-icon-ctn {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+
+@media (width >= 64rem) {
+    .fi-sc-wizard-header {
+        & .fi-sc-wizard-header-step-btn {
+            padding-inline: 1rem;
+            gap: 0.75rem;
+        }
+
+        & .fi-sc-wizard-header-step-text {
+            max-width: 10rem;
+        }
+
+        & .fi-sc-wizard-header-step-icon-ctn {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+    }
+}
+
+/* Step content: fixed min-height to prevent layout shift between steps */
+.fi-sc-wizard-step.fi-active {
+    min-height: 420px;
+}
