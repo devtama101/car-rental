@@ -39,9 +39,6 @@
         <main>
             {{ $slot }}
         </main>
-        <footer class="mt-16 py-8 border-t border-gray-200 text-center text-sm text-gray-400">
-            &copy; {{ date('Y') }} {{ __('Car Rental') }}. {{ __('All rights reserved.') }}
-        </footer>
         @filamentScripts
         @livewireScripts
     </body>
