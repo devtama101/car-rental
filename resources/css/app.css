@@ -32,6 +32,7 @@
     & .fi-sc-wizard-header-step-text {
         min-width: 0;
         max-width: 5rem;
+        overflow: hidden;
 
         & .fi-sc-wizard-header-step-label {
             overflow: hidden;
@@ -60,6 +61,7 @@
 
         & .fi-sc-wizard-header-step-text {
             max-width: 9rem;
+            overflow: hidden;
         }
 
         & .fi-sc-wizard-header-step-icon-ctn {
