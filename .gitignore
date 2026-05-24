@@ -38,3 +38,7 @@ Thumbs.db
 npm-debug.log
 yarn-error.log
 *.png
+/deploy_key
+/deploy_key.pub
+/github_deploy_key
+/github_deploy_key.pub
