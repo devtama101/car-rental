@@ -1,0 +1,61 @@
+services:
+  web:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    volumes:
+      - app-code:/var/www:ro
+      - app-storage:/var/www/storage:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    environment:
+      - VIRTUAL_HOST=car-rental.webartisan.id
+      - LETSENCRYPT_HOST=car-rental.webartisan.id
+      - VIRTUAL_PORT=80
+    networks:
+      - proxy-net
+      - internal
+
+  app:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - app-code:/var/www
+      - app-storage:/var/www/storage
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    environment:
+      - POSTGRES_DB=car_rental_production
+      - POSTGRES_USER=carrental
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "carrental"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  proxy-net:
+    name: proxy-net
+    external: true
+  internal:
+
+volumes:
+  pgdata:
+  app-storage:
+  app-code:
