@@ -74,10 +74,16 @@
                 <div>
                     <label for="listing-transmission" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Jenis Transmisi') }}</label>
                     <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
                         <select
                             id="listing-transmission"
                             wire:model.live="transmission"
-                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-4 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
+                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
                         >
                             <option value="">{{ __('Semua') }}</option>
                             <option value="automatic">{{ __('Automatic') }}</option>
@@ -95,10 +101,15 @@
                 <div>
                     <label for="listing-driver-option" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Opsi Sopir') }}</label>
                     <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
                         <select
                             id="listing-driver-option"
                             wire:model.live="requiresDriver"
-                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-4 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
+                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
                         >
                             <option value="">{{ __('Semua') }}</option>
                             <option value="0">{{ __('Tanpa Sopir') }}</option>
