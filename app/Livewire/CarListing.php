@@ -25,25 +25,42 @@ class CarListing extends Component
     public ?string $transmission = null;
 
     #[Url]
-    public ?string $rentalType = null;
+    public ?string $requiresDriver = null;
+
+    public ?string $startDateDisplay = null;
+
+    public ?string $startTime = null;
+
+    public ?string $endDateDisplay = null;
+
+    public ?string $endTime = null;
 
     public ?int $selectedVehicleId = null;
 
     public function mount(): void
     {
         if (! $this->startDate) {
-            $this->startDate = Carbon::now()->format('Y-m-d\TH:i');
+            $this->startDate = Carbon::now()->ceilHour()->format('Y-m-d\TH:i');
         }
 
         if (! $this->endDate) {
-            $this->endDate = Carbon::now()->addHours(24)->format('Y-m-d\TH:i');
+            $this->endDate = Carbon::parse($this->startDate)->addHour()->format('Y-m-d\TH:i');
         }
+
+        $start = Carbon::parse($this->startDate);
+        $this->startDateDisplay = $start->format('Y-m-d');
+        $this->startTime = $start->format('H:i');
+
+        $end = Carbon::parse($this->endDate);
+        $this->endDateDisplay = $end->format('Y-m-d');
+        $this->endTime = $end->format('H:i');
     }
 
-    public function updatedEndDate(): void
+    public function updated($property): void
     {
-        if ($this->startDate && $this->endDate && $this->endDate <= $this->startDate) {
-            $this->endDate = Carbon::parse($this->startDate)->addHours(24)->format('Y-m-d\TH:i');
+        if (in_array($property, ['startDateDisplay', 'startTime', 'endDateDisplay', 'endTime'], true)) {
+            $this->syncDatetimes();
+            $this->validateEndAfterStart();
         }
     }
 
@@ -71,12 +88,10 @@ class CarListing extends Component
             $query->where('transmission', $this->transmission);
         }
 
-        if ($this->rentalType === 'self-drive') {
-            $query->whereIn('rental_type', ['self-drive', 'both']);
-        } elseif ($this->rentalType === 'with-driver') {
-            $query->whereIn('rental_type', ['with-driver', 'both']);
-        } elseif ($this->rentalType === 'both') {
-            $query->where('rental_type', 'both');
+        if ($this->requiresDriver === '0') {
+            $query->where('requires_driver', false);
+        } elseif ($this->requiresDriver === '1') {
+            $query->where('requires_driver', true);
         }
 
         if ($this->startDate && $this->endDate) {
@@ -106,5 +121,33 @@ class CarListing extends Component
         return view('livewire.car-listing', [
             'vehicles' => $this->availableVehicles,
         ]);
+    }
+
+    protected function syncDatetimes(): void
+    {
+        if ($this->startDateDisplay && $this->startTime) {
+            $this->startDate = $this->startDateDisplay.'T'.$this->startTime;
+        }
+
+        if ($this->endDateDisplay && $this->endTime) {
+            $this->endDate = $this->endDateDisplay.'T'.$this->endTime;
+        }
+    }
+
+    protected function validateEndAfterStart(): void
+    {
+        if (! $this->startDate || ! $this->endDate) {
+            return;
+        }
+
+        $start = Carbon::parse($this->startDate);
+        $end = Carbon::parse($this->endDate);
+
+        if ($end->lte($start)) {
+            $end = $start->copy()->addHours(24);
+            $this->endDate = $end->format('Y-m-d\TH:i');
+            $this->endDateDisplay = $end->format('Y-m-d');
+            $this->endTime = $end->format('H:i');
+        }
     }
 }

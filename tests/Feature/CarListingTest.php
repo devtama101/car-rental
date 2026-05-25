@@ -76,46 +76,39 @@ test('url parameters sync to component properties', function () {
         'startDate' => $startDate,
         'endDate' => $endDate,
         'transmission' => 'automatic',
-        'rentalType' => 'self-drive',
+        'requiresDriver' => '0',
     ])
         ->test(CarListing::class)
         ->assertSet('startDate', $startDate)
         ->assertSet('endDate', $endDate)
         ->assertSet('transmission', 'automatic')
-        ->assertSet('rentalType', 'self-drive');
+        ->assertSet('requiresDriver', '0');
 });
 
-test('car listing filters by rental type self-drive', function () {
-    Vehicle::factory()->create(['rental_type' => 'self-drive']);
-    Vehicle::factory()->create(['rental_type' => 'with-driver']);
-    Vehicle::factory()->create(['rental_type' => 'both']);
+test('car listing filters by requires driver', function () {
+    Vehicle::factory()->create(['requires_driver' => false]);
+    Vehicle::factory()->create(['requires_driver' => true]);
 
-    $result = Livewire::test(CarListing::class)
-        ->set('rentalType', 'self-drive')
+    $withoutDriver = Livewire::test(CarListing::class)
+        ->set('requiresDriver', '0')
         ->get('availableVehicles');
 
-    expect($result->total())->toBe(2);
-    expect($result->pluck('rental_type')->map(fn ($v) => $v->value)->sort()->values()->toArray())->toBe(['both', 'self-drive']);
-});
+    expect($withoutDriver->total())->toBe(1);
+    expect($withoutDriver->first()->requires_driver)->toBeFalse();
 
-test('car listing filters by rental type with-driver', function () {
-    Vehicle::factory()->create(['rental_type' => 'self-drive']);
-    Vehicle::factory()->create(['rental_type' => 'with-driver']);
-    Vehicle::factory()->create(['rental_type' => 'both']);
-
-    $result = Livewire::test(CarListing::class)
-        ->set('rentalType', 'with-driver')
+    $withDriver = Livewire::test(CarListing::class)
+        ->set('requiresDriver', '1')
         ->get('availableVehicles');
 
-    expect($result->total())->toBe(2);
-    expect($result->pluck('rental_type')->map(fn ($v) => $v->value)->sort()->values()->toArray())->toBe(['both', 'with-driver']);
+    expect($withDriver->total())->toBe(1);
+    expect($withDriver->first()->requires_driver)->toBeTrue();
 });
 
-test('car listing shows all vehicles when rental type filter is empty', function () {
+test('car listing shows all vehicles when driver filter is empty', function () {
     Vehicle::factory()->count(3)->create();
 
     $result = Livewire::test(CarListing::class)
-        ->set('rentalType', '')
+        ->set('requiresDriver', '')
         ->get('availableVehicles');
 
     expect($result->total())->toBe(3);

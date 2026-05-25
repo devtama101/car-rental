@@ -12,16 +12,6 @@ Route::get('/cars', function () {
     return view('cars');
 })->name('cars.index');
 
-Route::get('/language/{locale}', function (string $locale) {
-    if (! in_array($locale, ['en', 'id'])) {
-        $locale = 'en';
-    }
-
-    session(['locale' => $locale]);
-
-    return redirect()->back();
-})->name('language');
-
 Route::get('/booking/{reference}/receipt', BookingReceiptController::class)
     ->where('reference', 'BRK-[A-Z0-9]+')
     ->name('booking.receipt');

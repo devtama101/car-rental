@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Vehicles\Schemas;
 
-use App\Enums\RentalType;
 use App\Enums\TransmissionType;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class VehicleForm
@@ -28,13 +28,11 @@ class VehicleForm
                     ->label(__('Transmission'))
                     ->options(TransmissionType::class)
                     ->required(),
+                Toggle::make('requires_driver')
+                    ->label(__('Requires Driver')),
                 TextInput::make('license_plate')
                     ->label(__('License Plate'))
                     ->unique(ignoreRecord: true),
-                Select::make('rental_type')
-                    ->label(__('Rental Type'))
-                    ->options(RentalType::class)
-                    ->required(),
                 Textarea::make('description')
                     ->label(__('Description'))
                     ->columnSpanFull(),

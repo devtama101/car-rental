@@ -53,3 +53,9 @@
 .fi-sc-wizard-step.fi-active {
     min-height: 420px;
 }
+
+/* ───────── Date/Time inputs: force dark scheme for glassmorphism ───────── */
+input[type="date"],
+input[type="time"] {
+    color-scheme: dark;
+}

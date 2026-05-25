@@ -103,8 +103,8 @@
                         <span class="text-gray-900">{{ __($rental->vehicle->transmission) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-500">Tipe Sewa</span>
-                        <span class="text-gray-900">@php $receiptRentalTypeLabels = ['self-drive' => 'Lepas Kunci', 'with-driver' => 'Dengan Sopir', 'both' => 'Lepas Kunci / Dengan Sopir']; @endphp {{ $receiptRentalTypeLabels[$rental->vehicle->rental_type] ?? $rental->vehicle->rental_type }}</span>
+                        <span class="text-gray-500">Opsi Sopir</span>
+                        <span class="text-gray-900">{{ $rental->vehicle->requires_driver ? 'Dengan Sopir' : 'Tanpa Sopir' }}</span>
                     </div>
                 </div>
             </div>

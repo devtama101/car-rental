@@ -2,27 +2,35 @@
     {{-- Hero + Availability Filter --}}
     <section class="relative bg-gray-900 overflow-hidden">
         <img class="absolute inset-0 w-full h-full object-cover object-center" src="https://images.unsplash.com/photo-1529369623266-f5264b696110?q=80&w=2148&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="" aria-hidden="true">
-        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/85"></div>
-        <div class="relative max-w-7xl mx-auto px-4 py-28 md:py-36 text-center">
-            <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white">
-                {{ __('CarRental') }}
-            </h1>
-            <p class="mt-5 text-lg md:text-xl text-gray-200 max-w-xl mx-auto leading-relaxed">
-                {{ __('Sewa Mobil Mudah, Aman, Terpercaya') }}
-            </p>
-            <div class="mt-9 flex justify-center gap-4 flex-wrap">
-                <a href="#how-it-works"
-                    class="px-7 py-3.5 border-2 border-white/80 text-white rounded-xl font-semibold hover:bg-white hover:text-gray-900 transition duration-200">
-                    {{ __('Cara Pesan') }}
-                </a>
-                <a href="{{ route('cars.index') }}"
-                    class="px-7 py-3.5 bg-accent-600 text-white rounded-xl font-semibold hover:bg-accent-500 transition duration-200 shadow-lg shadow-black/20">
-                    {{ __('Pesan Sekarang') }}
-                </a>
+        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/75 to-black/85"></div>
+
+        <div class="relative w-full py-28 md:py-36">
+            <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                {{-- Left: Brand + CTA --}}
+                <div class="text-left">
+                    <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white">
+                        CarRental
+                    </h1>
+                    <p class="mt-5 text-lg md:text-xl text-gray-200 max-w-xl leading-relaxed">
+                        {{ __('Sewa Mobil Mudah, Aman, Terpercaya') }}
+                    </p>
+                    <div class="flex gap-4 flex-wrap mt-9">
+                        <a href="#how-it-works"
+                            class="px-7 py-3.5 border-2 border-white/80 text-white rounded-xl font-semibold hover:bg-white hover:text-gray-900 transition duration-200">
+                            {{ __('Cara Pesan') }}
+                        </a>
+                        <a href="{{ route('cars.index') }}"
+                            class="px-7 py-3.5 bg-accent-600 text-white rounded-xl font-semibold hover:bg-accent-500 transition duration-200 shadow-lg shadow-black/20">
+                            {{ __('Pesan Sekarang') }}
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Right: Filter --}}
+                <div>
+                    <livewire:availability-filter />
+                </div>
             </div>
-        </div>
-        <div id="booking" class="relative max-w-7xl mx-auto px-4 pt-6 pb-24">
-            <livewire:availability-filter />
         </div>
     </section>
 
@@ -156,7 +164,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
                 {{-- Brand --}}
                 <div>
-                    <h3 class="text-white font-bold text-lg mb-4">{{ __('CarRental') }}</h3>
+                    <h3 class="text-white font-bold text-lg mb-4">CarRental</h3>
                     <p class="text-sm text-gray-400 leading-relaxed">{{ __('Solusi sewa mobil terpercaya dengan proses mudah, armada terawat, dan harga bersahabat.') }}</p>
                 </div>
 
@@ -164,10 +172,10 @@
                 <div>
                     <h4 class="text-white font-semibold text-sm uppercase tracking-wider mb-4">{{ __('Navigasi') }}</h4>
                     <ul class="space-y-2.5 text-sm">
-                        <li><a href="#how-it-works" class="text-gray-400 hover:text-white transition">{{ __('Cara Pesan') }}</a></li>
+                        <li><a href="{{ route('home') }}#how-it-works" class="text-gray-400 hover:text-white transition">{{ __('Cara Pesan') }}</a></li>
                         <li><a href="#testimonials" class="text-gray-400 hover:text-white transition">{{ __('Testimoni') }}</a></li>
                         <li><a href="{{ route('cars.index') }}" class="text-gray-400 hover:text-white transition">{{ __('Pesan Mobil') }}</a></li>
-                        <li><a href="{{ url('/dashboard/login') }}" class="text-gray-400 hover:text-white transition">{{ __('Masuk') }}</a></li>
+                        <li><a href="{{ url('/dashboard/login') }}" class="text-gray-400 hover:text-white transition">Login</a></li>
                     </ul>
                 </div>
 
@@ -220,13 +228,7 @@
 
             {{-- Bottom bar --}}
             <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-                <p>&copy; {{ date('Y') }} {{ __('CarRental') }}. {{ __('All rights reserved.') }}</p>
-                <div class="flex items-center gap-2">
-                    <span>{{ __('Bahasa') }}:</span>
-                    <a href="{{ route('language', 'en') }}" class="hover:text-white transition">EN</a>
-                    <span>|</span>
-                    <a href="{{ route('language', 'id') }}" class="hover:text-white transition">ID</a>
-                </div>
+                <p>&copy; {{ date('Y') }} CarRental. {{ __('All rights reserved.') }}</p>
             </div>
         </div>
     </footer>

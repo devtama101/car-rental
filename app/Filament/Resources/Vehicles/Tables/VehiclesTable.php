@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -36,11 +37,11 @@ class VehiclesTable
                 TextColumn::make('transmission')
                     ->label(__('Transmission'))
                     ->searchable(),
+                IconColumn::make('requires_driver')
+                    ->label(__('Requires Driver'))
+                    ->boolean(),
                 TextColumn::make('license_plate')
                     ->label(__('License Plate'))
-                    ->searchable(),
-                TextColumn::make('rental_type')
-                    ->label(__('Rental Type'))
                     ->searchable(),
                 ImageColumn::make('image')
                     ->label(__('Image')),

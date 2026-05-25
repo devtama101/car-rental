@@ -17,7 +17,7 @@ test('booking wizard renders for a vehicle', function () {
     Livewire::test(BookingWizard::class, ['vehicleId' => $vehicle->id])
         ->assertOk()
         ->assertSee($vehicle->name)
-        ->assertSee('Date & Duration');
+        ->assertSee('Tanggal & Durasi');
 });
 
 test('booking wizard validates rental details on incomplete submit', function () {
@@ -30,7 +30,7 @@ test('booking wizard validates rental details on incomplete submit', function ()
 });
 
 test('booking wizard validates customer details on submit', function () {
-    $vehicle = Vehicle::factory()->create(['rental_type' => 'both']);
+    $vehicle = Vehicle::factory()->create(['requires_driver' => false]);
 
     Livewire::test(BookingWizard::class, ['vehicleId' => $vehicle->id])
         ->set('data.start_date', Carbon::now()->addHours(2)->format('Y-m-d\TH:i'))
@@ -89,7 +89,7 @@ test('multi-day full day booking calculates correctly', function () {
 });
 
 test('booking wizard completes full booking flow', function () {
-    $vehicle = Vehicle::factory()->create(['rental_rate_per_day' => 100_000, 'rental_type' => 'both']);
+    $vehicle = Vehicle::factory()->create(['rental_rate_per_day' => 100_000, 'requires_driver' => false]);
 
     Livewire::test(BookingWizard::class, ['vehicleId' => $vehicle->id])
         ->set('data.is_half_day', true)
@@ -112,7 +112,7 @@ test('booking wizard completes full booking flow', function () {
 
 test('booking creates all related records', function () {
     $bank = Bank::factory()->create();
-    $vehicle = Vehicle::factory()->create(['rental_rate_per_day' => 100_000, 'rental_type' => 'both']);
+    $vehicle = Vehicle::factory()->create(['rental_rate_per_day' => 100_000, 'requires_driver' => false]);
 
     Livewire::test(BookingWizard::class, ['vehicleId' => $vehicle->id])
         ->set('data.is_half_day', true)

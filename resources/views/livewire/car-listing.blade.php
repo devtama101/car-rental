@@ -21,59 +21,65 @@
                     {{ __('Reset') }}
                 </button>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                {{-- Start Date --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {{-- Pengambilan/Pengantaran --}}
                 <div>
-                    <label for="listing-start-date" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Start Date & Time') }}</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <input
-                            type="datetime-local"
-                            id="listing-start-date"
-                            wire:model.live="startDate"
-                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-4 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors"
-                        >
-                    </div>
+                    <label for="listing-start-date" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Pengambilan/Pengantaran') }}</label>
+                    <input
+                        type="date"
+                        id="listing-start-date"
+                        wire:model.live="startDateDisplay"
+                        onfocus="this.showPicker()"
+                        class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm px-4 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors"
+                    >
                 </div>
 
-                {{-- End Date --}}
+                {{-- Jam Pengambilan --}}
                 <div>
-                    <label for="listing-end-date" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('End Date & Time') }}</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <input
-                            type="datetime-local"
-                            id="listing-end-date"
-                            wire:model.live="endDate"
-                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-4 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors"
-                        >
-                    </div>
+                    <label for="listing-start-time" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Jam Pengambilan') }}</label>
+                    <input
+                        type="time"
+                        id="listing-start-time"
+                        wire:model.live="startTime"
+                        onfocus="this.showPicker()"
+                        class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm px-4 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors"
+                    >
                 </div>
 
-                {{-- Transmission --}}
+                {{-- Tanggal Pengembalian --}}
                 <div>
-                    <label for="listing-transmission" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Transmission') }}</label>
+                    <label for="listing-end-date" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Tanggal Pengembalian') }}</label>
+                    <input
+                        type="date"
+                        id="listing-end-date"
+                        wire:model.live="endDateDisplay"
+                        onfocus="this.showPicker()"
+                        class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm px-4 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors"
+                    >
+                </div>
+
+                {{-- Jam Pengembalian --}}
+                <div>
+                    <label for="listing-end-time" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Jam Pengembalian') }}</label>
+                    <input
+                        type="time"
+                        id="listing-end-time"
+                        wire:model.live="endTime"
+                        onfocus="this.showPicker()"
+                        class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm px-4 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors"
+                    >
+                </div>
+
+                {{-- Jenis Transmisi --}}
+                <div>
+                    <label for="listing-transmission" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Jenis Transmisi') }}</label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                        </div>
                         <select
                             id="listing-transmission"
                             wire:model.live="transmission"
-                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
+                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-4 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
                         >
-                            <option value="">{{ __('All Types') }}</option>
+                            <option value="">{{ __('Semua') }}</option>
                             <option value="automatic">{{ __('Automatic') }}</option>
                             <option value="manual">{{ __('Manual') }}</option>
                         </select>
@@ -85,24 +91,18 @@
                     </div>
                 </div>
 
-                {{-- Rental Type --}}
+                {{-- Opsi Sopir --}}
                 <div>
-                    <label for="listing-rental-type" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Rental Type') }}</label>
+                    <label for="listing-driver-option" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Opsi Sopir') }}</label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                        </div>
                         <select
-                            id="listing-rental-type"
-                            wire:model.live="rentalType"
-                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
+                            id="listing-driver-option"
+                            wire:model.live="requiresDriver"
+                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-4 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
                         >
-                            <option value="">{{ __('All Types') }}</option>
-                            <option value="self-drive">{{ __('Self Drive') }}</option>
-                            <option value="with-driver">{{ __('With Driver') }}</option>
-                            <option value="both">{{ __('Both') }}</option>
+                            <option value="">{{ __('Semua') }}</option>
+                            <option value="0">{{ __('Tanpa Sopir') }}</option>
+                            <option value="1">{{ __('Dengan Sopir') }}</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,6 +110,19 @@
                             </svg>
                         </div>
                     </div>
+                </div>
+
+                {{-- Search button -- full width --}}
+                <div class="sm:col-span-2">
+                    <button
+                        wire:click="$refresh"
+                        class="w-full bg-accent-600 text-white rounded-xl px-6 py-2.5 text-sm font-semibold hover:bg-accent-700 active:bg-accent-800 transition-colors shadow-sm flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        {{ __('Search') }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -129,11 +142,10 @@
                     </button>
                 </span>
             @endif
-            @if($rentalType)
-                @php $rentalTypeLabels = ['self-drive' => __('Self Drive'), 'with-driver' => __('With Driver'), 'both' => __('Both')]; @endphp
+            @if($requiresDriver !== null && $requiresDriver !== '')
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-50 text-accent-700 border border-accent-200">
-                    {{ $rentalTypeLabels[$rentalType] ?? $rentalType }}
-                    <button wire:click="$set('rentalType', '')" class="hover:text-accent-900 transition-colors">
+                    {{ $requiresDriver === '1' ? __('Dengan Sopir') : __('Tanpa Sopir') }}
+                    <button wire:click="$set('requiresDriver', '')" class="hover:text-accent-900 transition-colors">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -157,9 +169,20 @@
                                 <span class="text-xs text-accent-400 font-medium uppercase tracking-wider">{{ __('No Image') }}</span>
                             </div>
                         @endif
-                        <span class="absolute top-2 right-2 px-2.5 py-1 bg-white/90 text-xs font-semibold text-gray-600 rounded-full shadow-sm capitalize border border-gray-100">
-                            {{ __($vehicle->transmission) }}
-                        </span>
+                        <div class="absolute top-2 right-2 flex flex-col gap-1.5">
+                            <span class="px-2.5 py-1 bg-white/90 text-xs font-semibold text-gray-600 rounded-full shadow-sm capitalize border border-gray-100">
+                                {{ __($vehicle->transmission) }}
+                            </span>
+                            @if($vehicle->requires_driver)
+                                <span class="px-2.5 py-1 bg-amber-100/90 text-xs font-semibold text-amber-800 rounded-full shadow-sm border border-amber-200">
+                                    {{ __('Dengan Sopir') }}
+                                </span>
+                            @else
+                                <span class="px-2.5 py-1 bg-sky-100/90 text-xs font-semibold text-sky-800 rounded-full shadow-sm border border-sky-200">
+                                    {{ __('Tanpa Sopir') }}
+                                </span>
+                            @endif
+                        </div>
                     </div>
                     <div class="p-5">
                         <h3 class="font-bold text-gray-900 text-base">{{ $vehicle->name }}</h3>

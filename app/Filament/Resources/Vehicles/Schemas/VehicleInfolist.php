@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Vehicles\Schemas;
 
+use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
@@ -29,11 +30,11 @@ class VehicleInfolist
                 TextEntry::make('transmission')
                     ->label(__('Transmission'))
                     ->placeholder('-'),
+                IconEntry::make('requires_driver')
+                    ->label(__('Requires Driver'))
+                    ->boolean(),
                 TextEntry::make('license_plate')
                     ->label(__('License Plate'))
-                    ->placeholder('-'),
-                TextEntry::make('rental_type')
-                    ->label(__('Rental Type'))
                     ->placeholder('-'),
                 TextEntry::make('description')
                     ->label(__('Description'))
