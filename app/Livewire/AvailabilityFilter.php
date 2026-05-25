@@ -13,6 +13,8 @@ class AvailabilityFilter extends Component
 
     public ?string $transmission = null;
 
+    public ?string $rentalType = null;
+
     public function mount(): void
     {
         $this->startDate = Carbon::now()->format('Y-m-d\TH:i');
@@ -32,6 +34,7 @@ class AvailabilityFilter extends Component
             'startDate' => $this->startDate,
             'endDate' => $this->endDate,
             'transmission' => $this->transmission,
+            'rentalType' => $this->rentalType,
         ], fn ($value) => $value !== null && $value !== '');
 
         $this->redirect(route('cars.index', $params));

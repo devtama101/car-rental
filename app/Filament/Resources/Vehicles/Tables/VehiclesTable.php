@@ -39,6 +39,9 @@ class VehiclesTable
                 TextColumn::make('license_plate')
                     ->label(__('License Plate'))
                     ->searchable(),
+                TextColumn::make('rental_type')
+                    ->label(__('Rental Type'))
+                    ->searchable(),
                 ImageColumn::make('image')
                     ->label(__('Image')),
                 TextColumn::make('rental_rate_per_day')

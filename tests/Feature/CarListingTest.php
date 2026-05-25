@@ -76,9 +76,47 @@ test('url parameters sync to component properties', function () {
         'startDate' => $startDate,
         'endDate' => $endDate,
         'transmission' => 'automatic',
+        'rentalType' => 'self-drive',
     ])
         ->test(CarListing::class)
         ->assertSet('startDate', $startDate)
         ->assertSet('endDate', $endDate)
-        ->assertSet('transmission', 'automatic');
+        ->assertSet('transmission', 'automatic')
+        ->assertSet('rentalType', 'self-drive');
+});
+
+test('car listing filters by rental type self-drive', function () {
+    Vehicle::factory()->create(['rental_type' => 'self-drive']);
+    Vehicle::factory()->create(['rental_type' => 'with-driver']);
+    Vehicle::factory()->create(['rental_type' => 'both']);
+
+    $result = Livewire::test(CarListing::class)
+        ->set('rentalType', 'self-drive')
+        ->get('availableVehicles');
+
+    expect($result->total())->toBe(2);
+    expect($result->pluck('rental_type')->map(fn ($v) => $v->value)->sort()->values()->toArray())->toBe(['both', 'self-drive']);
+});
+
+test('car listing filters by rental type with-driver', function () {
+    Vehicle::factory()->create(['rental_type' => 'self-drive']);
+    Vehicle::factory()->create(['rental_type' => 'with-driver']);
+    Vehicle::factory()->create(['rental_type' => 'both']);
+
+    $result = Livewire::test(CarListing::class)
+        ->set('rentalType', 'with-driver')
+        ->get('availableVehicles');
+
+    expect($result->total())->toBe(2);
+    expect($result->pluck('rental_type')->map(fn ($v) => $v->value)->sort()->values()->toArray())->toBe(['both', 'with-driver']);
+});
+
+test('car listing shows all vehicles when rental type filter is empty', function () {
+    Vehicle::factory()->count(3)->create();
+
+    $result = Livewire::test(CarListing::class)
+        ->set('rentalType', '')
+        ->get('availableVehicles');
+
+    expect($result->total())->toBe(3);
 });

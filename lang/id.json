@@ -203,5 +203,13 @@
     "Vehicle Name": "Nama Kendaraan",
     "ID": "ID",
     "Too many booking attempts. Please try again in :seconds seconds.": "Terlalu banyak percobaan pemesanan. Silakan coba lagi dalam :seconds detik.",
-    "A user with this email already exists. Please log in or use a different email.": "Email ini sudah terdaftar. Silakan masuk atau gunakan email lain."
+    "A user with this email already exists. Please log in or use a different email.": "Email ini sudah terdaftar. Silakan masuk atau gunakan email lain.",
+    "Rental Type": "Tipe Sewa",
+    "Both": "Keduanya",
+    "self-drive": "Lepas Kunci",
+    "with-driver": "Dengan Sopir",
+    "both": "Keduanya",
+    "You drive the vehicle yourself": "Anda mengemudi sendiri",
+    "Professional driver — estimated Rp :fee/day": "Sopir profesional — estimasi Rp :fee/hari",
+    "Professional driver included": "Termasuk sopir profesional"
 }

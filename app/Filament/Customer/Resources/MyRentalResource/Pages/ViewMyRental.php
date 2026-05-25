@@ -8,9 +8,9 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Utilities\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Utilities\Get;
 
 class ViewMyRental extends ViewRecord
 {
@@ -34,13 +34,15 @@ class ViewMyRental extends ViewRecord
                 })
                 ->form([
                     TextInput::make('amount')
+                        ->label(__('Amount'))
                         ->numeric()
                         ->required()
                         ->default($this->getRecord()->total_amount),
                     Select::make('method')
+                        ->label(__('Method'))
                         ->options([
-                            'cash' => __('cash'),
-                            'transfer' => __('transfer'),
+                            'cash' => __('Cash'),
+                            'transfer' => __('Bank Transfer'),
                         ])
                         ->required()
                         ->live()

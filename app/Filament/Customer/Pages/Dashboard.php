@@ -3,7 +3,6 @@
 namespace App\Filament\Customer\Pages;
 
 use App\Enums\PersonType;
-use Filament\Facades\Filament;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Illuminate\Support\Facades\DB;
 
@@ -17,9 +16,9 @@ class Dashboard extends BaseDashboard
             ->value('type');
 
         if ($type === PersonType::SuperAdmin->value || $type === PersonType::Admin->value) {
-            $this->redirect(Filament::getUrl('admin'));
+            $this->redirect('/admin');
         } elseif ($type === PersonType::Employee->value) {
-            $this->redirect(Filament::getUrl('employee'));
+            $this->redirect('/employee');
         }
     }
 

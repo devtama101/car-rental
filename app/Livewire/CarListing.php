@@ -24,6 +24,9 @@ class CarListing extends Component
     #[Url]
     public ?string $transmission = null;
 
+    #[Url]
+    public ?string $rentalType = null;
+
     public ?int $selectedVehicleId = null;
 
     public function mount(): void
@@ -66,6 +69,14 @@ class CarListing extends Component
 
         if ($this->transmission) {
             $query->where('transmission', $this->transmission);
+        }
+
+        if ($this->rentalType === 'self-drive') {
+            $query->whereIn('rental_type', ['self-drive', 'both']);
+        } elseif ($this->rentalType === 'with-driver') {
+            $query->whereIn('rental_type', ['with-driver', 'both']);
+        } elseif ($this->rentalType === 'both') {
+            $query->where('rental_type', 'both');
         }
 
         if ($this->startDate && $this->endDate) {

@@ -21,7 +21,7 @@
                     {{ __('Reset') }}
                 </button>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 {{-- Start Date --}}
                 <div>
                     <label for="listing-start-date" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Start Date & Time') }}</label>
@@ -84,6 +84,33 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Rental Type --}}
+                <div>
+                    <label for="listing-rental-type" class="block text-xs font-medium text-gray-500 mb-1.5">{{ __('Rental Type') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <select
+                            id="listing-rental-type"
+                            wire:model.live="rentalType"
+                            class="block w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm pl-10 pr-10 py-2.5 text-sm focus:border-accent-500 focus:ring-accent-500 focus:bg-white transition-colors appearance-none"
+                        >
+                            <option value="">{{ __('All Types') }}</option>
+                            <option value="self-drive">{{ __('Self Drive') }}</option>
+                            <option value="with-driver">{{ __('With Driver') }}</option>
+                            <option value="both">{{ __('Both') }}</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -96,6 +123,17 @@
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-50 text-accent-700 border border-accent-200">
                     {{ __($transmission) }}
                     <button wire:click="$set('transmission', '')" class="hover:text-accent-900 transition-colors">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </span>
+            @endif
+            @if($rentalType)
+                @php $rentalTypeLabels = ['self-drive' => __('Self Drive'), 'with-driver' => __('With Driver'), 'both' => __('Both')]; @endphp
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-50 text-accent-700 border border-accent-200">
+                    {{ $rentalTypeLabels[$rentalType] ?? $rentalType }}
+                    <button wire:click="$set('rentalType', '')" class="hover:text-accent-900 transition-colors">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>

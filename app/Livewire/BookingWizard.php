@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Enums\RentalStatus;
+use App\Enums\RentalType;
 use App\Models\Bank;
 use App\Models\Payment;
 use App\Models\Person;
@@ -49,11 +50,14 @@ class BookingWizard extends Component implements HasSchemas
     {
         $this->vehicleId = $vehicleId;
 
+        $vehicle = $this->getVehicle();
+        $defaultDriverOption = $vehicle->rental_type === RentalType::WithDriver ? 'with-driver' : 'self-drive';
+
         $this->form->fill([
             'start_date' => now()->addHour()->format('Y-m-d\TH:i'),
             'is_half_day' => false,
             'full_day_duration' => 1,
-            'driver_option' => 'self-drive',
+            'driver_option' => $defaultDriverOption,
             'delivery_method' => 'pickup',
         ]);
     }
@@ -121,22 +125,36 @@ class BookingWizard extends Component implements HasSchemas
                         ->schema([
                             Radio::make('driver_option')
                                 ->label(__('Driver Option'))
-                                ->options([
-                                    'self-drive' => __('Self Drive'),
-                                    'with-driver' => __('With Driver'),
-                                ])
+                                ->options(function () {
+                                    return match ($this->getVehicle()->rental_type) {
+                                        RentalType::SelfDrive => ['self-drive' => __('Self Drive')],
+                                        RentalType::WithDriver => ['with-driver' => __('With Driver')],
+                                        RentalType::Both => [
+                                            'self-drive' => __('Self Drive'),
+                                            'with-driver' => __('With Driver'),
+                                        ],
+                                    };
+                                })
                                 ->descriptions(function () {
+                                    $vehicle = $this->getVehicle();
                                     $driver = Person::where('type', 'driver')->first();
                                     $feeFmt = $driver
                                         ? number_format($driver->driver_fee_per_day, 0, ',', '.')
                                         : null;
 
-                                    return [
-                                        'self-drive' => __('You drive the vehicle yourself'),
-                                        'with-driver' => $feeFmt
-                                            ? __('Professional driver — estimated Rp :fee/day', ['fee' => $feeFmt])
-                                            : __('Professional driver included'),
-                                    ];
+                                    $selfDriveDesc = __('You drive the vehicle yourself');
+                                    $withDriverDesc = $feeFmt
+                                        ? __('Professional driver — estimated Rp :fee/day', ['fee' => $feeFmt])
+                                        : __('Professional driver included');
+
+                                    return match ($vehicle->rental_type) {
+                                        RentalType::SelfDrive => ['self-drive' => $selfDriveDesc],
+                                        RentalType::WithDriver => ['with-driver' => $withDriverDesc],
+                                        RentalType::Both => [
+                                            'self-drive' => $selfDriveDesc,
+                                            'with-driver' => $withDriverDesc,
+                                        ],
+                                    };
                                 })
                                 ->required()
                                 ->live(),
@@ -152,8 +170,22 @@ class BookingWizard extends Component implements HasSchemas
                                         ]);
                                 })
                                 ->searchable()
-                                ->visible(fn (Get $get): bool => $get('driver_option') === 'with-driver')
-                                ->required(fn (Get $get): bool => $get('driver_option') === 'with-driver')
+                                ->visible(function (Get $get): bool {
+                                    $vehicle = $this->getVehicle();
+                                    if ($vehicle->rental_type === RentalType::WithDriver) {
+                                        return true;
+                                    }
+
+                                    return $vehicle->rental_type === RentalType::Both && $get('driver_option') === 'with-driver';
+                                })
+                                ->required(function (Get $get): bool {
+                                    $vehicle = $this->getVehicle();
+                                    if ($vehicle->rental_type === RentalType::WithDriver) {
+                                        return true;
+                                    }
+
+                                    return $vehicle->rental_type === RentalType::Both && $get('driver_option') === 'with-driver';
+                                })
                                 ->live(),
                             Radio::make('delivery_method')
                                 ->label(__('Delivery Method'))

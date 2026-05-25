@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\RentalType;
 use App\Enums\TransmissionType;
 use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,6 +19,7 @@ class VehicleFactory extends Factory
             'year' => $this->faker->numberBetween(2019, 2025),
             'transmission' => $this->faker->randomElement(TransmissionType::cases())->value,
             'license_plate' => strtoupper($this->faker->bothify('?? #### ?##')),
+            'rental_type' => $this->faker->randomElement(RentalType::cases()),
             'description' => $this->faker->sentence(),
             'image' => null,
             'rental_rate_per_day' => $this->faker->numberBetween(200_000, 1_500_000),

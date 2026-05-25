@@ -41,6 +41,22 @@ test('availability filter search redirects to cars index with params', function 
         ]));
 });
 
+test('availability filter search includes rental type param', function () {
+    $startDate = now()->addDay()->format('Y-m-d\TH:i');
+    $endDate = now()->addDays(3)->format('Y-m-d\TH:i');
+
+    Livewire::test(AvailabilityFilter::class)
+        ->set('startDate', $startDate)
+        ->set('endDate', $endDate)
+        ->set('rentalType', 'with-driver')
+        ->call('search')
+        ->assertRedirect(route('cars.index', [
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'rentalType' => 'with-driver',
+        ]));
+});
+
 test('availability filter search excludes empty transmission param', function () {
     $startDate = now()->addDay()->format('Y-m-d\TH:i');
     $endDate = now()->addDays(3)->format('Y-m-d\TH:i');

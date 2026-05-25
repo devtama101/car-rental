@@ -86,6 +86,35 @@
                 </div>
             </div>
 
+            {{-- Rental Type --}}
+            <div>
+                <label for="filter-rental-type" class="block text-sm font-medium text-white/80 mb-1.5">
+                    {{ __('Rental Type') }}
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <select
+                        id="filter-rental-type"
+                        wire:model.live="rentalType"
+                        class="block w-full rounded-xl border-white/20 bg-white/10 shadow-sm pl-10 pr-10 py-3 text-sm text-white focus:border-white/50 focus:ring-white/30 focus:bg-white/20 transition-colors appearance-none"
+                    >
+                        <option value="" class="text-gray-900 bg-white">{{ __('All Types') }}</option>
+                        <option value="self-drive" class="text-gray-900 bg-white">{{ __('Self Drive') }}</option>
+                        <option value="with-driver" class="text-gray-900 bg-white">{{ __('With Driver') }}</option>
+                        <option value="both" class="text-gray-900 bg-white">{{ __('Both') }}</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
             {{-- Search button --}}
             <div class="flex items-end">
                 <button

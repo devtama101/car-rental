@@ -6,6 +6,7 @@ use App\Enums\ExpenseCategory;
 use App\Enums\PaymentMethod;
 use App\Enums\PersonType;
 use App\Enums\RentalStatus;
+use App\Enums\RentalType;
 use App\Enums\TransmissionType;
 use App\Models\Bank;
 use App\Models\Expense;
@@ -79,26 +80,26 @@ class DatabaseSeeder extends Seeder
 
         // ─── Vehicles (idempotent) ──────────────────────────────
         $vehicleData = [
-            ['name' => 'Toyota Avanza', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 1234 ABC', 'rental_rate_per_day' => 350_000],
-            ['name' => 'Toyota Innova', 'year' => 2023, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 2345 BCD', 'rental_rate_per_day' => 650_000],
-            ['name' => 'Honda Brio', 'year' => 2024, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 3456 CDE', 'rental_rate_per_day' => 300_000],
-            ['name' => 'Suzuki Ertiga', 'year' => 2022, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 4567 DEF', 'rental_rate_per_day' => 400_000],
-            ['name' => 'Daihatsu Xenia', 'year' => 2023, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 5678 EFG', 'rental_rate_per_day' => 375_000],
-            ['name' => 'Honda HR-V', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 6789 FGH', 'rental_rate_per_day' => 700_000],
-            ['name' => 'Mitsubishi Xpander', 'year' => 2023, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 7890 GHI', 'rental_rate_per_day' => 425_000],
-            ['name' => 'Toyota Rush', 'year' => 2022, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 8901 HIJ', 'rental_rate_per_day' => 400_000],
-            ['name' => 'Honda Civic', 'year' => 2025, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 9012 IJK', 'rental_rate_per_day' => 800_000],
-            ['name' => 'Toyota Fortuner', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 0123 JKL', 'rental_rate_per_day' => 1_200_000],
-            ['name' => 'Suzuki Baleno', 'year' => 2023, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 1122 KLM', 'rental_rate_per_day' => 275_000],
-            ['name' => 'Wuling Confero', 'year' => 2024, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 2233 LMN', 'rental_rate_per_day' => 325_000],
-            ['name' => 'Mazda CX-5', 'year' => 2025, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 3344 MNO', 'rental_rate_per_day' => 1_000_000],
-            ['name' => 'Daihatsu Terios', 'year' => 2022, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 4455 NOP', 'rental_rate_per_day' => 350_000],
-            ['name' => 'Toyota Camry', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 5566 OPQ', 'rental_rate_per_day' => 950_000],
-            ['name' => 'Nissan Livina', 'year' => 2023, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 6677 PQR', 'rental_rate_per_day' => 380_000],
-            ['name' => 'Hyundai Creta', 'year' => 2025, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 7788 QRS', 'rental_rate_per_day' => 550_000],
-            ['name' => 'Suzuki Ignis', 'year' => 2024, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 8899 RST', 'rental_rate_per_day' => 300_000],
-            ['name' => 'MG ZS', 'year' => 2023, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 9900 STU', 'rental_rate_per_day' => 450_000],
-            ['name' => 'Toyota Alphard', 'year' => 2025, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 0011 TUV', 'rental_rate_per_day' => 1_500_000],
+            ['name' => 'Toyota Avanza', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 1234 ABC', 'rental_rate_per_day' => 350_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Toyota Innova', 'year' => 2023, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 2345 BCD', 'rental_rate_per_day' => 650_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Honda Brio', 'year' => 2024, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 3456 CDE', 'rental_rate_per_day' => 300_000, 'rental_type' => RentalType::SelfDrive],
+            ['name' => 'Suzuki Ertiga', 'year' => 2022, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 4567 DEF', 'rental_rate_per_day' => 400_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Daihatsu Xenia', 'year' => 2023, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 5678 EFG', 'rental_rate_per_day' => 375_000, 'rental_type' => RentalType::SelfDrive],
+            ['name' => 'Honda HR-V', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 6789 FGH', 'rental_rate_per_day' => 700_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Mitsubishi Xpander', 'year' => 2023, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 7890 GHI', 'rental_rate_per_day' => 425_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Toyota Rush', 'year' => 2022, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 8901 HIJ', 'rental_rate_per_day' => 400_000, 'rental_type' => RentalType::SelfDrive],
+            ['name' => 'Honda Civic', 'year' => 2025, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 9012 IJK', 'rental_rate_per_day' => 800_000, 'rental_type' => RentalType::WithDriver],
+            ['name' => 'Toyota Fortuner', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 0123 JKL', 'rental_rate_per_day' => 1_200_000, 'rental_type' => RentalType::WithDriver],
+            ['name' => 'Suzuki Baleno', 'year' => 2023, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 1122 KLM', 'rental_rate_per_day' => 275_000, 'rental_type' => RentalType::SelfDrive],
+            ['name' => 'Wuling Confero', 'year' => 2024, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 2233 LMN', 'rental_rate_per_day' => 325_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Mazda CX-5', 'year' => 2025, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 3344 MNO', 'rental_rate_per_day' => 1_000_000, 'rental_type' => RentalType::WithDriver],
+            ['name' => 'Daihatsu Terios', 'year' => 2022, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 4455 NOP', 'rental_rate_per_day' => 350_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Toyota Camry', 'year' => 2024, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 5566 OPQ', 'rental_rate_per_day' => 950_000, 'rental_type' => RentalType::WithDriver],
+            ['name' => 'Nissan Livina', 'year' => 2023, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 6677 PQR', 'rental_rate_per_day' => 380_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Hyundai Creta', 'year' => 2025, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 7788 QRS', 'rental_rate_per_day' => 550_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Suzuki Ignis', 'year' => 2024, 'transmission' => TransmissionType::Manual, 'license_plate' => 'B 8899 RST', 'rental_rate_per_day' => 300_000, 'rental_type' => RentalType::SelfDrive],
+            ['name' => 'MG ZS', 'year' => 2023, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 9900 STU', 'rental_rate_per_day' => 450_000, 'rental_type' => RentalType::Both],
+            ['name' => 'Toyota Alphard', 'year' => 2025, 'transmission' => TransmissionType::Automatic, 'license_plate' => 'B 0011 TUV', 'rental_rate_per_day' => 1_500_000, 'rental_type' => RentalType::WithDriver],
         ];
 
         foreach ($vehicleData as $data) {
@@ -108,6 +109,7 @@ class DatabaseSeeder extends Seeder
                     'name' => $data['name'],
                     'year' => $data['year'],
                     'transmission' => $data['transmission']->value,
+                    'rental_type' => $data['rental_type']->value,
                     'description' => $this->faker()->sentence(),
                     'rental_rate_per_day' => $data['rental_rate_per_day'],
                     'image' => null,

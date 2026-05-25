@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Vehicles\Schemas;
 
+use App\Enums\RentalType;
 use App\Enums\TransmissionType;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -30,6 +31,10 @@ class VehicleForm
                 TextInput::make('license_plate')
                     ->label(__('License Plate'))
                     ->unique(ignoreRecord: true),
+                Select::make('rental_type')
+                    ->label(__('Rental Type'))
+                    ->options(RentalType::class)
+                    ->required(),
                 Textarea::make('description')
                     ->label(__('Description'))
                     ->columnSpanFull(),

@@ -42,3 +42,4 @@ yarn-error.log
 /deploy_key.pub
 /github_deploy_key
 /github_deploy_key.pub
+/local-after-click.yml

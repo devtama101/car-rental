@@ -32,6 +32,9 @@ class VehicleInfolist
                 TextEntry::make('license_plate')
                     ->label(__('License Plate'))
                     ->placeholder('-'),
+                TextEntry::make('rental_type')
+                    ->label(__('Rental Type'))
+                    ->placeholder('-'),
                 TextEntry::make('description')
                     ->label(__('Description'))
                     ->placeholder('-')

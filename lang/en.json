@@ -203,5 +203,13 @@
     "Vehicle Name": "Vehicle Name",
     "ID": "ID",
     "Too many booking attempts. Please try again in :seconds seconds.": "Too many booking attempts. Please try again in :seconds seconds.",
-    "A user with this email already exists. Please log in or use a different email.": "A user with this email already exists. Please log in or use a different email."
+    "A user with this email already exists. Please log in or use a different email.": "A user with this email already exists. Please log in or use a different email.",
+    "Rental Type": "Rental Type",
+    "Both": "Both",
+    "self-drive": "Self Drive",
+    "with-driver": "With Driver",
+    "both": "Both",
+    "You drive the vehicle yourself": "You drive the vehicle yourself",
+    "Professional driver — estimated Rp :fee/day": "Professional driver — estimated Rp :fee/day",
+    "Professional driver included": "Professional driver included"
 }

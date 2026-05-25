@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RentalType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,7 @@ class Vehicle extends Model
 
     protected $casts = [
         'year' => 'integer',
+        'rental_type' => RentalType::class,
     ];
 
     protected $fillable = [
@@ -22,6 +24,7 @@ class Vehicle extends Model
         'year',
         'transmission',
         'license_plate',
+        'rental_type',
         'description',
         'image',
         'rental_rate_per_day',
